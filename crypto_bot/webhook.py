@@ -1,8 +1,10 @@
 # webhook.py (ваш файл с Flask)
 import asyncio
 import logging
+
 from flask import Flask, request, current_app
-from config import get_config
+
+from config import get_config, init_config
 from handlers.payment_handler import process_successful_payment
 
 logger = logging.getLogger(__name__)
@@ -14,6 +16,8 @@ def cryptobot_webhook_handler():
     try:
         request_data = request.get_json(silent=True)
 
+        print(request_data)
+        print(request_data.get('update_type'))
         # CryptoBot отправляет update_type == "invoice_paid" при успешной оплате
         if request_data and request_data.get('update_type') == 'invoice_paid':
             # В CryptoBot полезная нагрузка часто лежит внутри ключа 'payload'
@@ -42,6 +46,7 @@ def cryptobot_webhook_handler():
 
             config = get_config()
             bot = config.BOT
+
             loop = current_app.config.get('EVENT_LOOP')
 
             # Импортируем функцию здесь, чтобы избежать циклических импортов
@@ -61,4 +66,5 @@ def cryptobot_webhook_handler():
 
 
 if __name__ == '__main__':
+    init_config(debug=False)
     app.run(host='0.0.0.0', port=5000, debug=True)
