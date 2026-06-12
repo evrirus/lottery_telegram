@@ -21,9 +21,9 @@ class CreateLotteryState(StatesGroup):
 async def cmd_create(message: Message, state: FSMContext):
     config = get_config()
     ADMIN_ID = config.ADMIN_ID
-
-    if message.from_user.id != ADMIN_ID:
-        return
+    #todo: расскоментить
+    # if message.from_user.id != ADMIN_ID:
+    #     return
 
     await message.answer("Введите описание приза:")
     await state.set_state(CreateLotteryState.waiting_for_prize)
