@@ -234,9 +234,7 @@ async def on_successful_payment(message: types.Message):
     parts = payload.split("_")
     lottery_id = int(parts[2])
     quantity = int(parts[3])
-    print(parts)
-    print(lottery_id, type(lottery_id))
-    print(quantity, type(quantity))
+
     success = await buy_ticket(lottery_id, message.from_user.id, quantity)
 
     if success:
