@@ -186,7 +186,7 @@ async def on_pre_checkout_query(pre_checkout_q: types.PreCheckoutQuery):
     try:
         payload = pre_checkout_q.invoice_payload
 
-        parts = payload.split(":")
+        parts = payload.split("_")
 
         # ожидаем:
         # lottery:user_id:lottery_id:quantity
