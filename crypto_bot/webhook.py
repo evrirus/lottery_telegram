@@ -3,6 +3,7 @@ import asyncio
 import logging
 from flask import Flask, request, current_app
 from config import get_config
+from handlers.payment_handler import process_successful_payment
 
 logger = logging.getLogger(__name__)
 app = Flask(__name__)
@@ -11,7 +12,7 @@ app = Flask(__name__)
 @app.route('/cryptobot-webhook', methods=['POST'])
 def cryptobot_webhook_handler():
     try:
-        request_data = request.json
+        request_data = request.get_json(silent=True)
 
         # CryptoBot отправляет update_type == "invoice_paid" при успешной оплате
         if request_data and request_data.get('update_type') == 'invoice_paid':
@@ -44,7 +45,7 @@ def cryptobot_webhook_handler():
             loop = current_app.config.get('EVENT_LOOP')
 
             # Импортируем функцию здесь, чтобы избежать циклических импортов
-            process_successful_payment
+            print("process_successful_payment")
 
             if bot and loop and loop.is_running():
                 # Передаем задачу в основной asyncio-цикл бота
@@ -57,3 +58,7 @@ def cryptobot_webhook_handler():
     except Exception as e:
         logger.error(f"Error in cryptobot webhook handler: {e}", exc_info=True)
         return 'Error', 500
+
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5000, debug=True)
