@@ -32,7 +32,7 @@ async def cmd_create(message: Message, state: FSMContext):
 @router.message(CreateLotteryState.waiting_for_prize)
 async def process_prize(message: Message, state: FSMContext):
     await state.update_data(prize=message.text)
-    await message.answer("Введите цену одного билета (в $долларах / ⭐звёздах):")
+    await message.answer("Введите цену одного билета в $USD:")
     await state.set_state(CreateLotteryState.waiting_for_price)
 
 

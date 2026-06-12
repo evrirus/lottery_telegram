@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import threading
 
 from aiogram import Dispatcher, Bot
 from aiogram.client.default import DefaultBotProperties
@@ -11,6 +12,10 @@ from database.models import init_db
 from handlers.start import router_start
 from handlers.admin.create_lottery import router as create_lottery_router
 from handlers.admin.refund import router as refund_router
+from crypto_bot.webhook import app as flask_app
+
+def run_flask():
+    flask_app.run(host="0.0.0.0", port=5000)
 
 async def main(config: Config):
     logging.basicConfig(level=logging.INFO)
@@ -38,6 +43,7 @@ async def main(config: Config):
     await dp.start_polling(bot)
 
 if __name__ == "__main__":
+    import asyncio
     import argparse
 
     parser = argparse.ArgumentParser()
@@ -46,4 +52,9 @@ if __name__ == "__main__":
 
     init_config(debug=args.debug)
     config = get_config()
+
+    # Flask в фоне
+    threading.Thread(target=run_flask, daemon=True).start()
+
+    # aiogram основной поток
     asyncio.run(main(config))
