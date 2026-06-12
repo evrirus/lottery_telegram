@@ -18,9 +18,9 @@ def run_bot():
 if __name__ == "__main__":
     init_config(debug=False)
 
-    # ❗ 1. bot сначала (ВАЖНО)
-    bot_thread = threading.Thread(target=run_bot, daemon=True)
-    bot_thread.start()
+    # ❗ 1. Flask в фоне
+    threading.Thread(target=run_flask, daemon=True).start()
 
-    # ❗ 2. Flask после (или можно тоже позже)
-    run_flask()
+    # ❗ 2. AIogram В MAIN THREAD (ВАЖНО)
+    config = get_config()
+    asyncio.run(bot_main(config))
