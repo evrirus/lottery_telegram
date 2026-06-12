@@ -30,7 +30,7 @@ async def process_successful_payment(bot: Bot, metadata: dict):
             )
 
             # 2. Проверяем, не стал ли этот покупатель тем, кто выкупил последний билет
-            await check_and_announce_winner(lottery_id)
+            await check_and_announce_winner(lottery_id, bot=bot)
 
         else:
             # Этот блок сработает ТОЛЬКО в случае редкой гонки данных (race condition),
