@@ -241,7 +241,7 @@ async def on_successful_payment(message: types.Message):
 
     if success:
         await message.answer(f"✅ Оплата прошла! Вы купили {quantity} билет(ов). Удачи! 🍀")
-        await check_and_announce_winner(lottery_id)
+        await check_and_announce_winner(lottery_id, bot=message.bot)
     else:
         await message.answer("❌ К сожалению, билеты только что закончились. Обратитесь в поддержку.")
 
