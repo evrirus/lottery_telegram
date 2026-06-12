@@ -1,7 +1,6 @@
 import aiosqlite
 from aiogram import Bot
 
-from config import get_config
 from database.models import pick_winner
 
 
