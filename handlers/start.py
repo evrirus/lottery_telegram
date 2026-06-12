@@ -232,8 +232,8 @@ async def on_pre_checkout_query(pre_checkout_q: types.PreCheckoutQuery):
 async def on_successful_payment(message: types.Message):
     payload = message.successful_payment.invoice_payload
     parts = payload.split("_")
-    lottery_id = int(parts[1])
-    quantity = int(parts[2])
+    lottery_id = int(parts[2])
+    quantity = int(parts[3])
     print(parts)
     print(lottery_id, type(lottery_id))
     print(quantity, type(quantity))
