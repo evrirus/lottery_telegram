@@ -19,6 +19,7 @@ async def check_and_announce_winner(lottery_id: int):
             config = get_config()
             bot = config.BOT
             winner = await bot.get_chat(winner_id)
+            print(winner)
             winner_username = f"@{winner.username}"  # В реальном коде лучше получить username через bot.get_chat(winner_id)
 
             announcement_text = (
