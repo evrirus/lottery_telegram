@@ -14,7 +14,9 @@ async def create_cryptobot_invoice(user_id: int, lottery_prize: str, quantity: i
     config = get_config()
     api_token = config.CRYPTOBOT_TOKEN  # Добавьте этот токен в ваш .env
 
-    url = "https://pay.crypt.bot/api/createInvoice"
+    # url = "https://pay.crypt.bot/api/createInvoice"
+    #TODO: расскоментировать
+    url = "https://testnet-pay.crypt.bot/api/createInvoice"
 
     headers = {
         "Crypto-Pay-API-Token": api_token,
