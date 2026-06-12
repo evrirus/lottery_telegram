@@ -13,6 +13,8 @@ from handlers.start import router_start
 from handlers.admin.create_lottery import router as create_lottery_router
 from handlers.admin.refund import router as refund_router
 from crypto_bot.webhook import app as flask_app
+from utils import shared_state
+
 
 def run_flask():
     flask_app.run(host="0.0.0.0", port=5000)

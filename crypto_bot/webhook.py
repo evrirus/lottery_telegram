@@ -6,63 +6,67 @@ from flask import Flask, request, current_app
 
 from config import get_config, init_config
 from handlers.payment_handler import process_successful_payment
+from utils import shared_state
 
 logger = logging.getLogger(__name__)
 app = Flask(__name__)
 
 
-@app.route('/cryptobot-webhook', methods=['POST'])
+@app.route("/cryptobot-webhook", methods=["POST"])
 def cryptobot_webhook_handler():
     try:
-        request_data = request.get_json(silent=True)
+        data = request.get_json(silent=True)
 
-        print(request_data)
-        print(request_data.get('update_type'))
-        # CryptoBot отправляет update_type == "invoice_paid" при успешной оплате
-        if request_data and request_data.get('update_type') == 'invoice_paid':
-            # В CryptoBot полезная нагрузка часто лежит внутри ключа 'payload'
-            payload_string = request_data.get('payload', {}).get('payload')
+        if not data:
+            return "OK", 200
 
-            if not payload_string:
-                logger.warning("CryptoBot Webhook: Received paid invoice but payload was empty.")
-                return 'OK', 200
+        if data.get("update_type") != "invoice_paid":
+            return "OK", 200
 
-            # Парсим формат: "lottery_{user_id}_{lottery_id}_{quantity}"
-            parts = payload_string.split('_')
+        payload = data.get("payload", {}).get("payload")
 
-            if len(parts) != 4 or parts[0] != 'lottery':
-                logger.error(f"CryptoBot Webhook: Invalid payload format received: {payload_string}")
-                return 'Error', 400
+        if not payload:
+            logger.warning("Empty payload")
+            return "OK", 200
 
-            user_id = int(parts[1])
-            lottery_id = int(parts[2])
-            quantity = int(parts[3])
+        parts = payload.split("_")
 
-            metadata = {
-                "user_id": user_id,
-                "lottery_id": lottery_id,
-                "quantity": quantity
-            }
+        if len(parts) != 4 or parts[0] != "lottery":
+            logger.error(f"Bad payload: {payload}")
+            return "Error", 400
 
-            config = get_config()
-            bot = config.BOT
+        user_id = int(parts[1])
+        lottery_id = int(parts[2])
+        quantity = int(parts[3])
 
-            loop = current_app.config.get('EVENT_LOOP')
+        metadata = {
+            "user_id": user_id,
+            "lottery_id": lottery_id,
+            "quantity": quantity,
+        }
 
-            # Импортируем функцию здесь, чтобы избежать циклических импортов
-            print("process_successful_payment")
+        bot = shared_state.BOT
+        loop = shared_state.EVENT_LOOP
 
-            if bot and loop and loop.is_running():
-                # Передаем задачу в основной asyncio-цикл бота
-                asyncio.run_coroutine_threadsafe(process_successful_payment(bot, metadata), loop)
-            else:
-                logger.error("CryptoBot Webhook: Bot or event loop is not running.")
+        # 🔥 HARD SAFETY CHECK
+        if bot is None or loop is None:
+            logger.error("Bot or loop not initialized yet")
+            return "OK", 200
 
-        return 'OK', 200
+        if not loop.is_running():
+            logger.error("Event loop is not running")
+            return "OK", 200
+
+        asyncio.run_coroutine_threadsafe(
+            process_successful_payment(bot, metadata),
+            loop,
+        )
+
+        return "OK", 200
 
     except Exception as e:
-        logger.error(f"Error in cryptobot webhook handler: {e}", exc_info=True)
-        return 'Error', 500
+        logger.error(f"Webhook error: {e}", exc_info=True)
+        return "Error", 500
 
 
 if __name__ == '__main__':
