@@ -30,8 +30,6 @@ async def check_and_announce_winner(lottery_id: int, bot: Bot = None):
             )
 
             try:
-                config = get_config()
-                bot = config.BOT
                 # Отправляем пост в указанный канал
                 await bot.send_message(
                     chat_id=lottery['channel_id'],
