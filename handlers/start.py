@@ -185,39 +185,48 @@ async def process_pay_cryptobot(callback: types.CallbackQuery):
 async def on_pre_checkout_query(pre_checkout_q: types.PreCheckoutQuery):
     try:
         payload = pre_checkout_q.invoice_payload
-        parts = payload.split("_")
 
-        # Проверяем, что payload имеет правильный формат "lottery_ID_QTY"
-        if len(parts) != 3 or parts[0] != "lottery":
+        parts = payload.split(":")
+
+        # ожидаем:
+        # lottery:user_id:lottery_id:quantity
+        if len(parts) != 4 or parts[0] != "lottery":
             await pre_checkout_q.answer(
                 ok=False,
-                error_message="⚠️ Некорректные данные платежа. Попробуйте выбрать билеты заново."
+                error_message="⚠️ Некорректные данные платежа."
             )
             return
 
-        lottery_id = int(parts[1])
-        quantity = int(parts[2])
+        user_id = int(parts[1])
+        lottery_id = int(parts[2])
+        quantity = int(parts[3])
 
-        # 👇 ПРОВЕРЯЕМ НАЛИЧИЕ БИЛЕТОВ 👇
-        is_available = await check_ticket_availability(lottery_id, quantity)
-
-        if is_available:
-            # Все ок, разрешаем Telegram списать средства
-            await pre_checkout_q.answer(ok=True)
-        else:
-            # Билетов не хватает. Telegram покажет это сообщение и ОТМЕНИТ оплату.
+        # защита от подмены пользователя
+        if pre_checkout_q.from_user.id != user_id:
             await pre_checkout_q.answer(
                 ok=False,
-                error_message=f"❌ К сожалению, {quantity} билетов только что закончились. Попробуйте купить меньшее количество или выберите другую лотерею."
+                error_message="⚠️ Несоответствие пользователя платежа."
             )
+            return
+
+        is_available = await check_ticket_availability(lottery_id, quantity)
+
+        if not is_available:
+            await pre_checkout_q.answer(
+                ok=False,
+                error_message=f"❌ Недостаточно билетов ({quantity})."
+            )
+            return
+
+        await pre_checkout_q.answer(ok=True)
 
     except Exception as e:
-
-        logger.exception(str(e))
+        logger.exception(e)
         await pre_checkout_q.answer(
             ok=False,
-            error_message="⚠️ Ошибка обработки данных платежа. Попробуйте снова."
+            error_message="⚠️ Ошибка обработки платежа."
         )
+
 
 @router_start.message(F.successful_payment)
 async def on_successful_payment(message: types.Message):
