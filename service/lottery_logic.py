@@ -1,0 +1,43 @@
+import aiosqlite
+
+from config import get_config
+from database.models import pick_winner
+
+
+async def check_and_announce_winner(lottery_id: int):
+
+    async with aiosqlite.connect("lottery.db") as db:
+        db.row_factory = aiosqlite.Row
+        cursor = await db.execute("SELECT * FROM lotteries WHERE id = ?", (lottery_id,))
+        lottery = await cursor.fetchone()
+
+    if lottery['sold_tickets'] >= lottery['total_tickets']:
+        # Билеты кончились! Выбираем победителя
+        winner_id = await pick_winner(lottery_id)
+
+        if winner_id:
+            config = get_config()
+            bot = config.BOT
+            winner = await bot.get_chat(winner_id)
+            winner_username = f"@{winner.username}"  # В реальном коде лучше получить username через bot.get_chat(winner_id)
+
+            announcement_text = (
+                f"🎉 <b>ЛОТЕРЕЯ ЗАВЕРШЕНА!</b> 🎉\n\n"
+                f"Приз: {lottery['prize']}\n"
+                f"Всего продано билетов: {lottery['total_tickets']}\n\n"
+                f"🏆 <b>ПОБЕДИТЕЛЬ:</b> {winner_username} 🏆\n\n"
+                f"Поздравляем! Свяжитесь с администратором для получения приза."
+            )
+
+            try:
+                config = get_config()
+                bot = config.BOT
+                # Отправляем пост в указанный канал
+                await bot.send_message(
+                    chat_id=lottery['channel_id'],
+                    text=announcement_text
+                )
+                # Опционально: уведомить победителя в ЛС
+                await bot.send_message(winner_id, "🎉 Поздравляем! Вы выиграли в лотерее! Свяжитесь с админом.")
+            except Exception as e:
+                print(f"Ошибка отправки в канал: {e}")
