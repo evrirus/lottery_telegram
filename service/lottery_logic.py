@@ -1,10 +1,11 @@
 import aiosqlite
+from aiogram import Bot
 
 from config import get_config
 from database.models import pick_winner
 
 
-async def check_and_announce_winner(lottery_id: int):
+async def check_and_announce_winner(lottery_id: int, bot: Bot = None):
 
     async with aiosqlite.connect("lottery.db") as db:
         db.row_factory = aiosqlite.Row
@@ -16,8 +17,6 @@ async def check_and_announce_winner(lottery_id: int):
         winner_id = await pick_winner(lottery_id)
 
         if winner_id:
-            config = get_config()
-            bot = config.BOT
             winner = await bot.get_chat(winner_id)
             print(winner)
             winner_username = f"@{winner.username}"  # В реальном коде лучше получить username через bot.get_chat(winner_id)
