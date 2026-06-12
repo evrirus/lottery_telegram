@@ -101,7 +101,7 @@ async def process_buy_quantity(callback: types.CallbackQuery):
         f"🎁 **Лотерея #{lottery['id']}**\n\n"
         f"🏆 Приз: {lottery['prize']}\n"
         f"🎫 Выбрано билетов: {quantity} шт.\n"
-        f"💰 Цена за 1 билет: {lottery['ticket_price']}\n"
+        f"💰 Цена за 1 билет: {lottery['ticket_price']}$\n"
         f"💵 **Итого к оплате: {total_price}**\n\n"
         f"Выберите удобный способ оплаты:",
         parse_mode="Markdown",
@@ -116,7 +116,7 @@ async def process_pay_stars(callback: types.CallbackQuery):
     parts = callback.data.split("_")
     user_id = int(parts[3])
     lottery_id = int(parts[4])
-    quantity = int(parts[5])
+    quantity = int(parts[5]) * 100
 
     lottery = await get_lottery_by_id(lottery_id)
     if not lottery:
