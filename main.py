@@ -16,7 +16,14 @@ def run_bot():
 
 
 if __name__ == "__main__":
-    init_config(debug=False)
+    import argparse
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--debug", action="store_true")
+    parser.add_argument("--proxy", action="store_true")
+    args = parser.parse_args()
+
+    init_config(debug=args.debug, proxy=args.proxy)
 
     # ❗ 1. Flask в фоне
     threading.Thread(target=run_flask, daemon=True).start()
