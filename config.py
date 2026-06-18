@@ -27,7 +27,7 @@ class Config:
 _config: Optional[Config] = None
 
 
-def init_config(debug: bool) -> None:
+def init_config(debug: bool, proxy: bool = False) -> None:
     global _config
 
     def env(name: str, required=True) -> str:
@@ -41,7 +41,7 @@ def init_config(debug: bool) -> None:
             debug=True,
             BOT_TOKEN=env("TOKEN"),
             ADMIN_ID=int(env("ADMIN_ID")),
-            proxy="socks5://p8tojo:6hxcrs@45.91.209.134:10034",
+            proxy="socks5://p8tojo:6hxcrs@45.91.209.134:10034" if proxy else None,
             BOT=None,
             CRYPTOBOT_TOKEN=env("CRYPTOBOT_TOKEN"),
         )
@@ -50,7 +50,7 @@ def init_config(debug: bool) -> None:
             debug=False,
             BOT_TOKEN=env("TOKEN"),
             ADMIN_ID=int(env("ADMIN_ID")),
-            proxy="socks5://p8tojo:6hxcrs@45.91.209.134:10034",
+            proxy="socks5://p8tojo:6hxcrs@45.91.209.134:10034" if proxy else None,
             BOT=None,
             CRYPTOBOT_TOKEN=env("CRYPTOBOT_TOKEN"),
         )

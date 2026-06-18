@@ -67,12 +67,16 @@ def get_payment_method_keyboard(user_id: int, lottery_id: int, quantity: int) ->
     payload = f"lottery_{user_id}_{lottery_id}_{quantity}"
 
     builder.button(
-        text="⭐️ Оплатить Звездами (Telegram)",
+        text="⭐️ Telegram",
         callback_data=f"pay_stars_{payload}"
     )
     builder.button(
-        text="💎 Оплатить Криптовалютой (CryptoBot)",
+        text="💎 CryptoBot",
         callback_data=f"pay_cryptobot_{payload}"
+    )
+    builder.button(
+        text="🌋 LavaTop",
+        callback_data=f"pay_lavatop_{payload}"
     )
 
     builder.button(text="❌ Отмена", callback_data="cancel_buy")

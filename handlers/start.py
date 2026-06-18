@@ -3,6 +3,7 @@ import logging
 from aiogram import Router, types, F
 from aiogram.filters import CommandStart, Command
 from aiogram.types import LabeledPrice
+from lava_top_sdk import LavaClient, LavaClientConfig, LogLevel, Currency, PaymentMethod
 
 from database.models import buy_ticket, get_all_active_lotteries, get_lottery_by_id, check_ticket_availability
 from keyboards.inline import get_ticket_quantity_keyboard, get_active_lotteries_keyboard, get_payment_method_keyboard
@@ -11,7 +12,14 @@ from service.lottery_logic import check_and_announce_winner
 
 logger = logging.getLogger()
 router_start = Router()
+config = LavaClientConfig(
+    api_key='your-api-key',
+    env='sandbox',  # or 'production'
+    webhook_secret_key='your-webhook-secret',
+    logging_level=LogLevel.DEBUG
+)
 
+client = LavaClient(config)
 
 @router_start.message(CommandStart())
 async def cmd_start(message: types.Message):
@@ -243,6 +251,31 @@ async def on_successful_payment(message: types.Message):
     else:
         await message.answer("❌ К сожалению, билеты только что закончились. Обратитесь в поддержку.")
 
+
+@router_start.callback_query(F.data.startswith("pay_lavatop_lottery_"))
+async def process_pay_stars(callback: types.CallbackQuery):
+    await callback.answer("⏳ Генерируем ссылку на оплату...", show_alert=False)
+
+    parts = callback.data.split("_")
+    user_id = int(parts[3])
+    lottery_id = int(parts[4])
+    quantity = int(parts[5])
+
+    lottery = await get_lottery_by_id(lottery_id)
+    if not lottery:
+        await callback.answer("Лотерея не найдена", show_alert=True)
+        return
+
+    total_price = lottery['ticket_price'] * quantity
+    invoice_payload = f"lottery_{user_id}_{lottery_id}_{quantity}"
+
+    payment = client.create_one_time_payment(
+        email="orion4605@gmail.com",
+        offer_id="836b9fc5-7ae9-4a27-9642-592bc44072b7",
+        currency=Currency.RUB,
+        payment_method=PaymentMethod.BANK131,
+    )
+    await callback.message.answer(f"{payment.id=}\n{payment.paymentUrl=}")
 
 # 6. Кнопка "Назад к списку" (опционально, можно добавить в клавиатуру количества билетов)
 @router_start.callback_query(F.data == "cancel_buy")

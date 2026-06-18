@@ -2,9 +2,9 @@
 import asyncio
 import logging
 
-from flask import Flask, request, current_app
+from flask import Flask, request
 
-from config import get_config, init_config
+from config import init_config
 from handlers.payment_handler import process_successful_payment
 from utils import shared_state
 
