@@ -16,7 +16,7 @@ class LotteryService:
     @staticmethod
     async def get_lottery(lottery_id: int):
         lottery = await LotteryRepository.get_by_id(lottery_id)
-        return lottery if not lottery and lottery.status == "active" else None
+        return lottery if lottery and lottery.status == "active" else None
 
     @staticmethod
     async def check_ticket_availability(lottery_id: int, quantity: int) -> bool:
