@@ -72,3 +72,15 @@ def create_session():
         )
 
     return AiohttpSession(timeout=5)
+
+TORTOISE_ORM = {
+    "connections": {
+        "default": "sqlite://lottery.db"
+    },
+    "apps": {
+        "models": {
+            "models": ["database.models", "aerich.models"],
+            "default_connection": "default",
+        }
+    }
+}

@@ -2,13 +2,16 @@ import logging
 import os
 
 import dotenv
+import requests
 from aiogram import Router, types, F
 from aiogram.filters import CommandStart, Command
 from aiogram.types import LabeledPrice
 from lava_top_sdk import LavaClient, LavaClientConfig, LogLevel, Currency, PaymentMethod
 
-from database.models import buy_ticket, get_all_active_lotteries, get_lottery_by_id, check_ticket_availability
-from keyboards.inline import get_ticket_quantity_keyboard, get_active_lotteries_keyboard, get_payment_method_keyboard
+from database.service.lottery import LotteryService
+from database.service.ticket import TicketService
+from keyboards.inline import get_ticket_quantity_keyboard, get_active_lotteries_keyboard, get_payment_method_keyboard, \
+    start_keyboard
 from service.cryptobot import create_cryptobot_invoice
 from service.lottery_logic import check_and_announce_winner
 
@@ -27,17 +30,22 @@ client = LavaClient(config)
 
 @router_start.message(CommandStart())
 async def cmd_start(message: types.Message):
+
+    await message.answer(
+        "Выберите действие",
+        reply_markup=start_keyboard()
+    )
     await show_lotteries_list(message)
 
 # 2. Новая команда /lotteries
-@router_start.message(Command("lotteries"))
-async def cmd_lotteries(message: types.Message):
-    await show_lotteries_list(message)
+@router_start.callback_query(lambda c: c.data == "lotteries")
+async def cmd_lotteries(cbd: types.CallbackQuery):
+    await show_lotteries_list(cbd)
 
 
 async def show_lotteries_list(target: types.Message | types.CallbackQuery):
     """Универсальная функция для показа списка лотерей (работает и для Message, и для CallbackQuery)"""
-    lotteries = await get_all_active_lotteries()
+    lotteries = await LotteryService.get_actives()
 
     if not lotteries:
         text = "🕊 Сейчас нет активных лотерей. Следите за обновлениями!"
@@ -66,7 +74,7 @@ async def show_lotteries_list(target: types.Message | types.CallbackQuery):
 @router_start.callback_query(F.data.startswith("select_lottery_"))
 async def process_select_lottery(callback: types.CallbackQuery):
     lottery_id = int(callback.data.split("_")[-1])
-    lottery = await get_lottery_by_id(lottery_id)
+    lottery = await LotteryService.get_lottery(lottery_id)
 
     if not lottery:
         await callback.answer("⚠️ Эта лотерея уже завершена или не найдена!", show_alert=True)
@@ -98,7 +106,7 @@ async def process_buy_quantity(callback: types.CallbackQuery):
     lottery_id = int(parts[2])
     quantity = int(parts[3])
 
-    lottery = await get_lottery_by_id(lottery_id)
+    lottery = await LotteryService.get_lottery(lottery_id)
 
     if not lottery:
         await callback.answer("⚠️ Эта лотерея уже завершена!", show_alert=True)
@@ -130,7 +138,7 @@ async def process_pay_stars(callback: types.CallbackQuery):
     lottery_id = int(parts[4])
     quantity = int(parts[5]) * 100
 
-    lottery = await get_lottery_by_id(lottery_id)
+    lottery = await LotteryService.get_lottery(lottery_id)
     if not lottery:
         await callback.answer("Лотерея не найдена", show_alert=True)
         return
@@ -158,7 +166,7 @@ async def process_pay_cryptobot(callback: types.CallbackQuery):
     lottery_id = int(parts[4])
     quantity = int(parts[5])
 
-    lottery = await get_lottery_by_id(lottery_id)
+    lottery = await LotteryService.get_lottery(lottery_id)
     if not lottery:
         await callback.answer("Лотерея не найдена", show_alert=True)
         return
@@ -221,7 +229,7 @@ async def on_pre_checkout_query(pre_checkout_q: types.PreCheckoutQuery):
             )
             return
 
-        is_available = await check_ticket_availability(lottery_id, quantity)
+        is_available = await LotteryService.check_ticket_availability(lottery_id, quantity)
 
         if not is_available:
             await pre_checkout_q.answer(
@@ -247,7 +255,7 @@ async def on_successful_payment(message: types.Message):
     lottery_id = int(parts[2])
     quantity = int(parts[3])
 
-    success = await buy_ticket(lottery_id, message.from_user.id, quantity)
+    success = await TicketService.buy(lottery_id, message.from_user.id, quantity)
 
     if success:
         await message.answer(f"✅ Оплата прошла! Вы купили {quantity} билет(ов). Удачи! 🍀")
@@ -265,13 +273,21 @@ async def process_pay_stars(callback: types.CallbackQuery):
     lottery_id = int(parts[4])
     quantity = int(parts[5])
 
-    lottery = await get_lottery_by_id(lottery_id)
+    lottery = await LotteryService.get_lottery(lottery_id)
     if not lottery:
         await callback.answer("Лотерея не найдена", show_alert=True)
         return
 
-    total_price = lottery['ticket_price'] * quantity
-    invoice_payload = f"lottery_{user_id}_{lottery_id}_{quantity}"
+    # total_price = lottery['ticket_price'] * quantity
+    # invoice_payload = f"lottery_{user_id}_{lottery_id}_{quantity}"
+    # LINK = "https://gate.lava.top/api/v3/invoice"
+    # r = requests.post(LINK, data={
+    #     "email": "client@gmail.com",
+    #     "offerId": "836b9fc5-7ae9-4a27-9642-592bc44072b7",
+    #     "currency": "RUB"
+    # })
+    # r.raise_for_status()
+
 
     payment = client.create_one_time_payment(
         email="orion4605@gmail.com",

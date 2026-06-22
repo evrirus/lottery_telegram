@@ -1,19 +1,16 @@
-import aiosqlite
 from aiogram import Bot
 
-from database.models import pick_winner
+from database.service.lottery import LotteryService
+from database.service.winner import WinnerService
 
 
 async def check_and_announce_winner(lottery_id: int, bot: Bot = None):
+    lottery = await LotteryService.get_lottery(lottery_id)
 
-    async with aiosqlite.connect("lottery.db") as db:
-        db.row_factory = aiosqlite.Row
-        cursor = await db.execute("SELECT * FROM lotteries WHERE id = ?", (lottery_id,))
-        lottery = await cursor.fetchone()
 
     if lottery['sold_tickets'] >= lottery['total_tickets']:
         # Билеты кончились! Выбираем победителя
-        winner_id = await pick_winner(lottery_id)
+        winner_id = await WinnerService.pick_winner(lottery_id)
 
         if winner_id:
             winner = await bot.get_chat(winner_id)

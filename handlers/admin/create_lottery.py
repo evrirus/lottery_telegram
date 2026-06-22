@@ -5,7 +5,7 @@ from aiogram.fsm.state import State, StatesGroup
 from aiogram.types import Message
 
 from config import get_config
-from database.models import create_lottery
+from database.service.lottery import LotteryService
 
 router = Router()
 
@@ -56,7 +56,7 @@ async def process_channel(message: Message, state: FSMContext):
     channel_id = message.forward_from_chat.id if message.forward_from_chat else int(message.text)
     data = await state.get_data()
 
-    await create_lottery(data['prize'], data['price'], data['total'], channel_id)
+    await LotteryService.create(data['prize'], data['price'], data['total'], channel_id)
     await message.answer(
         f"✅ Лотерея создана!\nПриз: {data['prize']}\nЦена: {data['price']}\nВсего билетов: {data['total']}"
     )
