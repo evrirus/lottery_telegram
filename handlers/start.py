@@ -284,7 +284,7 @@ async def process_pay_stars(callback: types.CallbackQuery):
         email="orion4605@gmail.com",
         offer_id="836b9fc5-7ae9-4a27-9642-592bc44072b7",
         currency=Currency.RUB,
-        payment_method="SBP",
+        payment_method=PaymentMethod.BANK131,
     )
     await callback.message.answer(f"{payment.id=}\n{payment.paymentUrl=}")
 
