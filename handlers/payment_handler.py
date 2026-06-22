@@ -26,7 +26,7 @@ async def process_successful_payment(bot: Bot, metadata: dict):
         await bot.send_message(
             chat_id=user_id,
             text=f"✅ Оплата через CryptoBot прошла успешно!\n"
-                 f"Ваш баланс пополнен на {quantity}. Удачи в розыгрышах! 🍀"
+                 f"Ваш баланс пополнен на {quantity}р. Удачи в розыгрышах! 🍀"
         )
 
     except Exception as e:
