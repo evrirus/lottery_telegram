@@ -255,17 +255,17 @@ async def on_successful_payment(message: types.Message):
 @router_start.callback_query(F.data.startswith("pay_lavatop_lottery_"))
 async def process_pay_stars(callback: types.CallbackQuery):
     parts = callback.data.split("_")
+    print(parts)
     user_id = int(parts[3])
-    lottery_id = int(parts[4])
-    quantity = int(parts[5])
+    quantity = int(parts[4])
     await callback.answer(f"⏳ Генерируем ссылку на оплату... {quantity} Рубчиков", show_alert=False)
 
 
 
-    lottery = await LotteryService.get_lottery(lottery_id)
-    if not lottery:
-        await callback.answer("Лотерея не найдена", show_alert=True)
-        return
+    # lottery = await LotteryService.get_lottery(lottery_id)
+    # if not lottery:
+    #     await callback.answer("Лотерея не найдена", show_alert=True)
+    #     return
 
     # total_price = lottery['ticket_price'] * quantity
     # invoice_payload = f"lottery_{user_id}_{lottery_id}_{quantity}"
