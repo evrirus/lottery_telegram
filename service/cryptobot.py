@@ -6,8 +6,11 @@ from config import get_config  # Убедитесь, что у вас есть �
 logger = logging.getLogger(__name__)
 
 
-async def create_cryptobot_invoice(user_id: int, lottery_prize: str, quantity: int, total_price: float,
-                                   payload: str) -> str | None:
+async def create_cryptobot_invoice(
+        lottery_prize: str,
+        total_price: float,
+        payload: str
+) -> str | None:
     """
     Создает инвойс в CryptoBot и возвращает ссылку на оплату.
     """
@@ -26,7 +29,7 @@ async def create_cryptobot_invoice(user_id: int, lottery_prize: str, quantity: i
     data = {
         "asset": "USDT",  # Или "TON", "BTC" в зависимости от того, что вы принимаете
         "amount": str(total_price),
-        "description": f"Лотерея: {lottery_prize} ({quantity} билетов)",
+        "description": lottery_prize,
         "payload": payload,
         "allow_comments": False,
         "allow_anonymous": False

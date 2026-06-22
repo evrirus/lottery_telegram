@@ -57,15 +57,15 @@ def get_active_lotteries_keyboard(lotteries: list) -> InlineKeyboardMarkup:
 
 # keyboards/inline.py
 
-def get_payment_method_keyboard(user_id: int, lottery_id: int, quantity: int) -> InlineKeyboardMarkup:
+def get_payment_method_keyboard(user_id: int, amount: int) -> InlineKeyboardMarkup:
     """
     Генерирует клавиатуру с выбором способа оплаты.
     """
     builder = InlineKeyboardBuilder()
 
     # Формируем единый payload для обоих методов, чтобы Flask и бот могли его прочитать
-    # Формат: lottery_{user_id}_{lottery_id}_{quantity}
-    payload = f"lottery_{user_id}_{quantity}"
+    # Формат: lottery_{user_id}_{lottery_id}_{amount}
+    payload = f"lottery_{user_id}_{amount}"
 
     builder.button(
         text="⭐️ Telegram",

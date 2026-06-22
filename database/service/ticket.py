@@ -2,16 +2,21 @@ from tortoise.transactions import in_transaction
 
 from database.repo.lottery import LotteryRepository
 from database.repo.ticket import TicketRepository
+from database.service.user import UserService
 
 
 class TicketService:
 
     @staticmethod
-    async def buy(lottery_id: int, user, quantity: int) -> bool:
+    async def buy(lottery_id: int, user_id: int, quantity: int) -> bool:
         async with in_transaction():
-            lottery = await LotteryRepository.get_for_update(lottery_id)
 
+            lottery = await LotteryRepository.get_for_update(lottery_id)
             if not lottery:
+                return False
+
+            user = await UserService.get_user(user_id)
+            if user.balance < lottery.ticket_price * quantity:
                 return False
 
             if lottery.sold_tickets + quantity > lottery.total_tickets:
@@ -21,6 +26,7 @@ class TicketService:
                 await TicketRepository.create(lottery, user)
 
             lottery.sold_tickets += quantity
+
             await LotteryRepository.save(lottery)
 
             return True
