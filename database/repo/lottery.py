@@ -15,7 +15,7 @@ class LotteryRepository:
 
     @staticmethod
     async def get_actives():
-        return await Lottery.filter(status="active").order_by("-id").first()
+        return await Lottery.filter(status="active").order_by("-id")
 
     @staticmethod
     async def get_by_id(lottery_id: int):
