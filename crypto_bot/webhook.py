@@ -16,6 +16,7 @@ app = Flask(__name__)
 @app.route("/cryptobot-webhook", methods=["POST"])
 def webhook_cryptobot():
     try:
+        print(request.headers)
         data = request.get_json(silent=True)
 
         if not data:
