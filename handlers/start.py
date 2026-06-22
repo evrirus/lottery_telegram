@@ -144,6 +144,7 @@ async def process_pay_stars(callback: types.CallbackQuery):
     total_price = lottery.ticket_price * quantity
     invoice_payload = f"lottery_{user_id}_{lottery_id}_{quantity}"
 
+    await callback.message.delete()
     await callback.message.answer_invoice(
         title=f"Билет: {lottery.prize}",
         description=f"Количество: {quantity} шт.",
@@ -152,7 +153,7 @@ async def process_pay_stars(callback: types.CallbackQuery):
         currency="XTR",
         prices=[LabeledPrice(label="Итого", amount=total_price)],
     )
-    await callback.answer()
+
 
 
 @router_start.callback_query(F.data.startswith("pay_cryptobot_lottery_"))
