@@ -175,8 +175,7 @@ async def process_pay_cryptobot(callback: types.CallbackQuery):
     if payment_link:
         await callback.message.edit_text(
             f"💎 **Оплата через CryptoBot**\n\n"
-            f"К оплате: {total_price} USDT\n"
-            f"Билетов: {total_price} шт.\n\n"
+            f"К оплате: {total_price} USDT\n\n"
             f"Нажмите на кнопку ниже, чтобы перейти к безопасной оплате. "
             f"После оплаты бот автоматически выдаст вам билеты.",
             parse_mode="Markdown",
@@ -255,12 +254,13 @@ async def on_successful_payment(message: types.Message):
 
 @router_start.callback_query(F.data.startswith("pay_lavatop_lottery_"))
 async def process_pay_stars(callback: types.CallbackQuery):
-    await callback.answer("⏳ Генерируем ссылку на оплату...", show_alert=False)
-
     parts = callback.data.split("_")
     user_id = int(parts[3])
     lottery_id = int(parts[4])
     quantity = int(parts[5])
+    await callback.answer(f"⏳ Генерируем ссылку на оплату... {quantity} Рубчиков", show_alert=False)
+
+
 
     lottery = await LotteryService.get_lottery(lottery_id)
     if not lottery:
