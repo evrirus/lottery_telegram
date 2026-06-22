@@ -31,6 +31,6 @@ async def check_and_announce_winner(lottery_id: int, bot: Bot = None):
                     text=announcement_text
                 )
                 # Опционально: уведомить победителя в ЛС
-                await bot.send_message(winner_id, "🎉 Поздравляем! Вы выиграли в лотерее! Свяжитесь с админом.")
+                await bot.send_message(winner_id, "🎉 Поздравляем! Вы выиграли в лотерее! Свяжитесь с <a href=\"tg://user?id=899827113\">админом</a>.")
             except Exception as e:
                 print(f"Ошибка отправки в канал: {e}")

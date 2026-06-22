@@ -112,17 +112,15 @@ async def process_buy_quantity(callback: types.CallbackQuery):
         await callback.message.delete()
         return
 
-    user_id = callback.from_user.id
     total_price = lottery.ticket_price * quantity
 
     # Обновляем текст сообщения, добавляя итоговую сумму
     await callback.message.edit_text(
-        f"🎁 **Лотерея #{lottery.id}**\n\n"
+        f"🎁 <b>Лотерея #{lottery.id}</b>\n\n"
         f"🏆 Приз: {lottery.prize}\n"
         f"🎫 Выбрано билетов: {quantity} шт.\n"
-        f"💰 Цена за 1 билет: {lottery.ticket_price}$\n"
-        f"💵 **Итого к оплате: {total_price}**\n\n",
-        parse_mode="Markdown",
+        f"💰 Цена за 1 билет: {lottery.ticket_price}₽\n"
+        f"💵 <b>Итого к оплате: {total_price}₽</b>\n\n",
         reply_markup=last_keyboard_buy(quantity, lottery.id)
     )
     await callback.answer()
