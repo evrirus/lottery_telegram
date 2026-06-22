@@ -1,6 +1,9 @@
 # services/cryptobot.py
 import aiohttp
 import logging
+
+import aiohttp
+
 from config import get_config  # Убедитесь, что у вас есть функция получения конфига
 
 logger = logging.getLogger(__name__)

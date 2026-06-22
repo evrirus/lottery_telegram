@@ -62,12 +62,51 @@ def webhook_cryptobot():
         return "OK", 200
 
 
+
 @app.route("/lavatop-webhook", methods=["POST"])
 def webhook_lavatop():
-    data = request.get_json(silent=True)
-    print(data)
+    try:
+        print(request.headers)
+        api_key = request.headers.get("X-Api-Key")
 
-    if not data:
+        if not api_key:
+            return "Missing API key", 401
+
+        if api_key != "YOUR_SECRET_KEY":
+            return "Invalid API key", 403
+        data = request.get_json(silent=True)
+
+        if not data:
+            return "OK", 200
+
+        # проверка события
+        if data.get("eventType") != "payment.success" or data.get("status") != "completed":
+            return "OK", 200
+
+        product = data.get("product", {})
+        buyer = data.get("buyer", {})
+
+        contract_id = data.get("contractId")
+        amount = data.get("amount")
+        currency = data.get("currency")
+
+        logger.info(
+            f"Payment success: contract={contract_id}, "
+            f"amount={amount} {currency}, "
+            f"user={buyer.get('email')}, "
+            f"product={product.get('id')}"
+        )
+
+
+        # ⚠️ здесь твоя бизнес-логика
+        # например:
+        # user_id = find_user_by_email(buyer["email"])
+        # add_balance(user_id, Decimal(str(amount)))
+
+        return "OK", 200
+
+    except Exception as e:
+        logger.error(f"LavaTop webhook error: {e}", exc_info=True)
         return "OK", 200
 
 if __name__ == '__main__':
