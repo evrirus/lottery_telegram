@@ -35,9 +35,7 @@ async def cmd_start(message: types.Message):
         "Выберите действие",
         reply_markup=start_keyboard()
     )
-    await show_lotteries_list(message)
 
-# 2. Новая команда /lotteries
 @router_start.callback_query(lambda c: c.data == "lotteries")
 async def cmd_lotteries(cbd: types.CallbackQuery):
     await show_lotteries_list(cbd)
@@ -75,7 +73,7 @@ async def show_lotteries_list(target: types.Message | types.CallbackQuery):
 async def process_select_lottery(callback: types.CallbackQuery):
     lottery_id = int(callback.data.split("_")[-1])
     lottery = await LotteryService.get_lottery(lottery_id)
-
+    print(lottery_id, type(lottery_id), lottery)
     if not lottery:
         await callback.answer("⚠️ Эта лотерея уже завершена или не найдена!", show_alert=True)
         await callback.message.delete()
