@@ -65,7 +65,7 @@ def get_payment_method_keyboard(user_id: int, lottery_id: int, quantity: int) ->
 
     # Формируем единый payload для обоих методов, чтобы Flask и бот могли его прочитать
     # Формат: lottery_{user_id}_{lottery_id}_{quantity}
-    payload = f"lottery_{user_id}_{lottery_id}_{quantity}"
+    payload = f"lottery_{user_id}_{quantity}"
 
     builder.button(
         text="⭐️ Telegram",
@@ -98,4 +98,24 @@ def start_keyboard() -> InlineKeyboardMarkup:
         callback_data="replenish"
     )
     builder.adjust(1, repeat=True)
+    return builder.as_markup()
+
+
+def to_replenish_keyboard() -> InlineKeyboardMarkup:
+    builder = InlineKeyboardBuilder()
+    amounts = [100, 300, 500, 1000, 2000, 5000, 7500]
+
+    for amount in amounts:
+        builder.button(
+            text=f"{amount} ₽",
+            callback_data=f"replenish_{amount}"
+        )
+
+    builder.button(
+        text="❌ Отменить",
+        callback_data="lotteries"
+    )
+
+    builder.adjust(4, 1, 1)
+
     return builder.as_markup()

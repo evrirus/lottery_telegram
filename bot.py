@@ -12,6 +12,7 @@ from database.models import init_tortoise
 from handlers.admin.create_lottery import router as create_lottery_router
 from handlers.admin.refund import router as refund_router
 from handlers.start import router_start
+from handlers.replenish import router as replenish_router
 
 
 async def main(config):
@@ -30,6 +31,7 @@ async def main(config):
         router_start,
         create_lottery_router,
         refund_router,
+        replenish_router,
     )
 
     await init_tortoise()
