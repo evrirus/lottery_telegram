@@ -115,7 +115,7 @@ def to_replenish_keyboard() -> InlineKeyboardMarkup:
         callback_data="lotteries"
     )
 
-    builder.adjust(4, 1, 1)
+    builder.adjust(3, 4, 1)
 
     return builder.as_markup()
 
