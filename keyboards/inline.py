@@ -38,8 +38,9 @@ def get_ticket_quantity_keyboard(lottery_id: int, available_tickets: int) -> Inl
 def get_active_lotteries_keyboard(lotteries: list) -> InlineKeyboardMarkup:
     """Генерирует клавиатуру со списком доступных лотерей"""
     builder = InlineKeyboardBuilder()
-
+    print(lotteries)
     for lottery in lotteries:
+
         available = lottery['total_tickets'] - lottery['sold_tickets']
         # Обрезаем длинное название приза для красоты кнопки
         prize_short = lottery['prize'][:25] + "..." if len(lottery['prize']) > 25 else lottery['prize']
