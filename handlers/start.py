@@ -12,7 +12,7 @@ from database.service.lottery import LotteryService
 from database.service.ticket import TicketService
 from database.service.user import UserService
 from keyboards.inline import get_ticket_quantity_keyboard, get_active_lotteries_keyboard, get_payment_method_keyboard, \
-    start_keyboard
+    start_keyboard, last_keyboard_buy
 from service.cryptobot import create_cryptobot_invoice
 from service.lottery_logic import check_and_announce_winner
 
@@ -121,10 +121,9 @@ async def process_buy_quantity(callback: types.CallbackQuery):
         f"🏆 Приз: {lottery.prize}\n"
         f"🎫 Выбрано билетов: {quantity} шт.\n"
         f"💰 Цена за 1 билет: {lottery.ticket_price}$\n"
-        f"💵 **Итого к оплате: {total_price}**\n\n"
-        f"Выберите удобный способ оплаты:",
+        f"💵 **Итого к оплате: {total_price}**\n\n",
         parse_mode="Markdown",
-        reply_markup=get_payment_method_keyboard(user_id, quantity)
+        reply_markup=last_keyboard_buy(quantity, lottery.id)
     )
     await callback.answer()
 

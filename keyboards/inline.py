@@ -62,9 +62,6 @@ def get_payment_method_keyboard(user_id: int, amount: int) -> InlineKeyboardMark
     Генерирует клавиатуру с выбором способа оплаты.
     """
     builder = InlineKeyboardBuilder()
-
-    # Формируем единый payload для обоих методов, чтобы Flask и бот могли его прочитать
-    # Формат: lottery_{user_id}_{lottery_id}_{amount}
     payload = f"lottery_{user_id}_{amount}"
 
     builder.button(
@@ -118,4 +115,12 @@ def to_replenish_keyboard() -> InlineKeyboardMarkup:
 
     builder.adjust(4, 1, 1)
 
+    return builder.as_markup()
+
+def last_keyboard_buy(qty: int, lottery_id: int) -> InlineKeyboardMarkup:
+    builder = InlineKeyboardBuilder()
+    builder.button(
+        text="Купить",
+        callback_data=f"buy_tickets_{qty}_{lottery_id}"
+    )
     return builder.as_markup()

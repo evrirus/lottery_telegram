@@ -11,7 +11,7 @@ router = Router()
 async def replenish_handler(cbd: CallbackQuery):
     user = await UserService.get_user(cbd.message.chat.id)
     await cbd.message.answer(
-        f"Ваш баланс: {user.balance}$\n\n",
+        f"Ваш баланс: {user.balance}р\n\n",
         reply_markup=to_replenish_keyboard()
     )
 
