@@ -5,7 +5,8 @@ import logging
 from async_cb_rate.parser import get_rate
 from flask import Flask, request
 
-from config import init_config
+from config import init_config, get_config
+from crypto_bot.verify import verify_crypto_pay_signature
 from handlers.payment_handler import process_successful_payment
 from utils import shared_state
 
@@ -16,7 +17,12 @@ app = Flask(__name__)
 @app.route("/cryptobot-webhook", methods=["POST"])
 def webhook_cryptobot():
     try:
-        print(request.headers)
+        config = get_config()
+        verify = verify_crypto_pay_signature(config.CRYPTOBOT_TOKEN, request=request)
+        print(f"verify: {verify}")
+        if not verify:
+            return "invalid signature", 403
+
         data = request.get_json(silent=True)
 
         if not data:
