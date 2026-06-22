@@ -79,20 +79,20 @@ async def process_select_lottery(callback: types.CallbackQuery):
         await callback.message.delete()
         return
 
-    available_tickets = lottery['total_tickets'] - lottery['sold_tickets']
+    available_tickets = lottery.total_tickets - lottery.sold_tickets
 
     if available_tickets <= 0:
         await callback.answer("🎉 Все билеты в этой лотерее распроданы!", show_alert=True)
         return
 
     await callback.message.edit_text(
-        f"🎁 **Лотерея #{lottery['id']}**\n\n"
-        f"🏆 Приз: {lottery['prize']}\n"
-        f"💰 Цена билета: {lottery['ticket_price']} ⭐️\n"
-        f"📊 Продано: {lottery['sold_tickets']} из {lottery['total_tickets']}\n\n"
+        f"🎁 **Лотерея #{lottery.id}**\n\n"
+        f"🏆 Приз: {lottery.prize}\n"
+        f"💰 Цена билета: {lottery.ticket_price} ⭐️\n"
+        f"📊 Продано: {lottery.sold_tickets} из {lottery.total_tickets}\n\n"
         f"Выберите количество билетов:",
         parse_mode="Markdown",
-        reply_markup=get_ticket_quantity_keyboard(lottery['id'], available_tickets)
+        reply_markup=get_ticket_quantity_keyboard(lottery.id, available_tickets)
     )
     await callback.answer()
 
@@ -112,14 +112,14 @@ async def process_buy_quantity(callback: types.CallbackQuery):
         return
 
     user_id = callback.from_user.id
-    total_price = lottery['ticket_price'] * quantity
+    total_price = lottery.ticket_price * quantity
 
     # Обновляем текст сообщения, добавляя итоговую сумму
     await callback.message.edit_text(
-        f"🎁 **Лотерея #{lottery['id']}**\n\n"
-        f"🏆 Приз: {lottery['prize']}\n"
+        f"🎁 **Лотерея #{lottery.id}**\n\n"
+        f"🏆 Приз: {lottery.prize}\n"
         f"🎫 Выбрано билетов: {quantity} шт.\n"
-        f"💰 Цена за 1 билет: {lottery['ticket_price']}$\n"
+        f"💰 Цена за 1 билет: {lottery.ticket_price}$\n"
         f"💵 **Итого к оплате: {total_price}**\n\n"
         f"Выберите удобный способ оплаты:",
         parse_mode="Markdown",
@@ -141,11 +141,11 @@ async def process_pay_stars(callback: types.CallbackQuery):
         await callback.answer("Лотерея не найдена", show_alert=True)
         return
 
-    total_price = lottery['ticket_price'] * quantity
+    total_price = lottery.ticket_price * quantity
     invoice_payload = f"lottery_{user_id}_{lottery_id}_{quantity}"
 
     await callback.message.answer_invoice(
-        title=f"Билет: {lottery['prize']}",
+        title=f"Билет: {lottery.prize}",
         description=f"Количество: {quantity} шт.",
         payload=invoice_payload,
         provider_token="",
@@ -169,13 +169,13 @@ async def process_pay_cryptobot(callback: types.CallbackQuery):
         await callback.answer("Лотерея не найдена", show_alert=True)
         return
 
-    total_price = lottery['ticket_price'] * quantity
+    total_price = lottery.ticket_price * quantity
     invoice_payload = f"lottery_{user_id}_{lottery_id}_{quantity}"
 
     # Запрашиваем ссылку у CryptoBot
     payment_link = await create_cryptobot_invoice(
         user_id=user_id,
-        lottery_prize=lottery['prize'],
+        lottery_prize=lottery.prize,
         quantity=quantity,
         total_price=total_price,
         payload=invoice_payload
