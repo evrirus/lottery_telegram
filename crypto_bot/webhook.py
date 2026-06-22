@@ -73,14 +73,15 @@ def webhook_cryptobot():
 @app.route("/lavatop-webhook", methods=["POST"])
 def webhook_lavatop():
     try:
-        print(request.headers)
         api_key = request.headers.get("X-Api-Key")
 
         if not api_key:
             return "Missing API key", 401
 
-        if api_key != "YOUR_SECRET_KEY":
+        config = get_config()
+        if api_key != config.LAVATOP_TOKEN:
             return "Invalid API key", 403
+
         data = request.get_json(silent=True)
 
         if not data:
@@ -103,7 +104,6 @@ def webhook_lavatop():
             f"user={buyer.get('email')}, "
             f"product={product.get('id')}"
         )
-
 
         # ⚠️ здесь твоя бизнес-логика
         # например:
