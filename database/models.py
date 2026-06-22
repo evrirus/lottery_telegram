@@ -1,16 +1,14 @@
 from tortoise import Tortoise
 from tortoise import models, fields
 
+from config import TORTOISE_ORM
+
 DB_PATH = "lottery.db"
 
 DB_URL = "sqlite://lottery.db"
 
 async def init_tortoise():
-    await Tortoise.init(
-        db_url=DB_URL,
-        modules={"models": ["models"]}
-    )
-
+    await Tortoise.init(config=TORTOISE_ORM)
     await Tortoise.generate_schemas()
 
 
