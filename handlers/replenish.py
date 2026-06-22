@@ -35,6 +35,10 @@ async def buy_tickets_handler(cbd: CallbackQuery):
     qty = int(parts[2])
     lottery_id = int(parts[3])
     print(parts)
-    await TicketService.buy(lottery_id, cbd.from_user.id, qty)
-    await cbd.message.answer(f"Вы купили {qty} билетов!")
-    await WinnerService.pick_winner(lottery_id)
+
+    success, reason = await TicketService.buy(lottery_id, cbd.from_user.id, qty)
+    if success:
+        await cbd.message.answer(f"Вы купили {qty} билетов!")
+        return await WinnerService.pick_winner(lottery_id)
+
+    await cbd.message.answer(reason)

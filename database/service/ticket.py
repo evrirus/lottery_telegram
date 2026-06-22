@@ -1,3 +1,5 @@
+from typing import Tuple
+
 from tortoise.transactions import in_transaction
 
 from database.repo.lottery import LotteryRepository
@@ -8,19 +10,19 @@ from database.service.user import UserService
 class TicketService:
 
     @staticmethod
-    async def buy(lottery_id: int, user_id: int, quantity: int) -> bool:
+    async def buy(lottery_id: int, user_id: int, quantity: int) -> Tuple[bool, str]:
         async with in_transaction():
 
             lottery = await LotteryRepository.get_for_update(lottery_id)
             if not lottery:
-                return False
+                return False, "Лотерея не найдена"
 
             user = await UserService.get_user(user_id)
             if user.balance < lottery.ticket_price * quantity:
-                return False
+                return False, "Недостаточно средств"
 
             if lottery.sold_tickets + quantity > lottery.total_tickets:
-                return False
+                return False, "В продаже отсутствует достаточное количество билетов"
 
             for _ in range(quantity):
                 await TicketRepository.create(lottery, user)
@@ -29,4 +31,4 @@ class TicketService:
 
             await LotteryRepository.save(lottery)
 
-            return True
+            return True, "ok"
