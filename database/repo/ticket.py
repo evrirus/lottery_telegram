@@ -17,5 +17,8 @@ class TicketRepository:
 
     @staticmethod
     async def get_all_user_ids(lottery_id: int) -> list[int]:
-        tickets = await Ticket.filter(lottery_id=lottery_id).values_list("telegram_id", flat=True)
+        tickets = await Ticket.filter(
+            lottery_id=lottery_id
+        ).values_list("user__telegram_id", flat=True)
+
         return list(tickets)
