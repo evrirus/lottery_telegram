@@ -20,6 +20,7 @@ class Config:
     proxy: Optional[str] = None
     BOT: Optional[Bot] = None
     CRYPTOBOT_TOKEN: Optional[str] = None
+    LAVATOP_TOKEN: Optional[str] = None
 
     def set_bot(self, bot: Bot) -> None:
         self.BOT = bot
@@ -44,6 +45,7 @@ def init_config(debug: bool, proxy: bool = False) -> None:
             proxy="socks5://p8tojo:6hxcrs@45.91.209.134:10034" if proxy else None,
             BOT=None,
             CRYPTOBOT_TOKEN=env("CRYPTOBOT_TOKEN"),
+            LAVATOP_TOKEN=env("LAVATOP_TOKEN")
         )
     else:
         _config = Config(
@@ -53,6 +55,7 @@ def init_config(debug: bool, proxy: bool = False) -> None:
             proxy="socks5://p8tojo:6hxcrs@45.91.209.134:10034" if proxy else None,
             BOT=None,
             CRYPTOBOT_TOKEN=env("CRYPTOBOT_TOKEN"),
+            LAVATOP_TOKEN=env("LAVATOP_TOKEN")
         )
 
 
