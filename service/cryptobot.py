@@ -26,10 +26,13 @@ async def create_cryptobot_invoice(
         "Crypto-Pay-API-Token": api_token,
         "Content-Type": "application/json"
     }
-
+    print(total_price)
+    print(rate)
+    print(total_price / rate)
+    print(total_price * rate)
     data = {
         "asset": "USDT",  # Или "TON", "BTC" в зависимости от того, что вы принимаете
-        "amount": str(total_price / rate),
+        "amount": str(total_price),
         "description": lottery_prize,
         "payload": payload,
         "allow_comments": False,
