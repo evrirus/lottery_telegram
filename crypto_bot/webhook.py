@@ -40,6 +40,7 @@ def webhook_cryptobot():
             return "OK", 200
 
         parts = payload.split("_")
+        print(parts)
         if len(parts) != 4:
             return "OK", 200
 
