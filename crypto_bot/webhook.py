@@ -41,13 +41,12 @@ def webhook_cryptobot():
 
         parts = payload.split("_")
         print(parts)
-        if len(parts) != 4:
+        if len(parts) != 3:
             return "OK", 200
 
         metadata = {
             "user_id": int(parts[1]),
-            "lottery_id": int(parts[2]),
-            "quantity": int(parts[3]),
+            "quantity": int(parts[2]),
         }
 
         asyncio.run_coroutine_threadsafe(
