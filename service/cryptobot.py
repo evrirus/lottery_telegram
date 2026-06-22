@@ -9,7 +9,8 @@ logger = logging.getLogger(__name__)
 async def create_cryptobot_invoice(
         lottery_prize: str,
         total_price: float,
-        payload: str
+        payload: str,
+        rate: float
 ) -> str | None:
     """
     Создает инвойс в CryptoBot и возвращает ссылку на оплату.
@@ -28,7 +29,7 @@ async def create_cryptobot_invoice(
 
     data = {
         "asset": "USDT",  # Или "TON", "BTC" в зависимости от того, что вы принимаете
-        "amount": str(total_price),
+        "amount": str(total_price / rate),
         "description": lottery_prize,
         "payload": payload,
         "allow_comments": False,

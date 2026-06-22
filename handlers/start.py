@@ -164,13 +164,14 @@ async def process_pay_cryptobot(callback: types.CallbackQuery):
     total_price = round(total_price_rubles / usd_rate.price, 2)
     print(total_price)
 
-    invoice_payload = f"lottery_{user_id}_{total_price}"
+    invoice_payload = f"lottery_{user_id}_{total_price_rubles}"
 
     # Запрашиваем ссылку у CryptoBot
     payment_link = await create_cryptobot_invoice(
-        lottery_prize=f"Пополение баланса на {total_price}",
+        lottery_prize=f"Пополение баланса на {total_price_rubles}",
         total_price=total_price,
-        payload=invoice_payload
+        payload=invoice_payload,
+        rate=usd_rate.price
     )
 
     if payment_link:
