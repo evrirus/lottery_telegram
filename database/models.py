@@ -14,14 +14,8 @@ async def init_tortoise():
 
 class User(models.Model):
     id = fields.IntField(pk=True)
-
-    # Telegram ID должен быть уникальным
     telegram_id = fields.BigIntField(unique=True, index=True)
-
-    # Баланс (Decimal хранится как string внутри SQLite)
     balance = fields.DecimalField(max_digits=12, decimal_places=2, default=0)
-
-    # Дата регистрации
     register_at = fields.DatetimeField(auto_now_add=True)
 
     class Meta:
