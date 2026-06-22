@@ -18,12 +18,14 @@ class TicketService:
                 return False, "Лотерея не найдена"
 
             user = await UserService.get_user(user_id)
-            if user.balance < lottery.ticket_price * quantity:
+            total_price = lottery.ticket_price * quantity
+            if user.balance < total_price:
                 return False, "Недостаточно средств"
 
             if lottery.sold_tickets + quantity > lottery.total_tickets:
                 return False, "В продаже отсутствует достаточное количество билетов"
 
+            await UserService.withdraw(user_id, total_price)
             for _ in range(quantity):
                 await TicketRepository.create(lottery, user)
 
