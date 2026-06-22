@@ -20,6 +20,7 @@ class UserService:
     async def add_balance(telegram_id: int, amount: Decimal):
         async with in_transaction():
             user = await UserRepository.get_for_update(telegram_id)
+            amount = Decimal(str(amount))  # ключевой фикс
             user.balance += amount
             await UserRepository.save(user)
             return user.balance
