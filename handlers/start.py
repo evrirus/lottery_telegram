@@ -124,7 +124,7 @@ async def process_buy_quantity(callback: types.CallbackQuery):
         f"💵 **Итого к оплате: {total_price}**\n\n"
         f"Выберите удобный способ оплаты:",
         parse_mode="Markdown",
-        reply_markup=get_payment_method_keyboard(user_id, lottery_id, quantity)
+        reply_markup=get_payment_method_keyboard(user_id, quantity)
     )
     await callback.answer()
 
@@ -134,21 +134,14 @@ async def process_pay_stars(callback: types.CallbackQuery):
     # payload: pay_stars_lottery_{user_id}_{lottery_id}_{quantity}
     parts = callback.data.split("_")
     user_id = int(parts[3])
-    lottery_id = int(parts[4])
-    quantity = int(parts[5]) * 100
+    total_price = int(parts[4])
 
-    lottery = await LotteryService.get_lottery(lottery_id)
-    if not lottery:
-        await callback.answer("Лотерея не найдена", show_alert=True)
-        return
-
-    total_price = lottery.ticket_price * quantity
-    invoice_payload = f"lottery_{user_id}_{lottery_id}_{quantity}"
+    invoice_payload = f"lottery_{user_id}_{total_price}"
 
     await callback.message.delete()
     await callback.message.answer_invoice(
-        title=f"Билет: {lottery.prize}",
-        description=f"Количество: {quantity} шт.",
+        title=f"Пополнение баланса на {total_price}₽",
+        description=f"Баланс можете потратить на покупку билета(-ов)",
         payload=invoice_payload,
         provider_token="",
         currency="XTR",
@@ -163,22 +156,15 @@ async def process_pay_cryptobot(callback: types.CallbackQuery):
 
     parts = callback.data.split("_")
     user_id = int(parts[3])
-    lottery_id = int(parts[4])
-    quantity = int(parts[5])
+    total_price = int(parts[4])
 
-    lottery = await LotteryService.get_lottery(lottery_id)
-    if not lottery:
-        await callback.answer("Лотерея не найдена", show_alert=True)
-        return
 
-    total_price = lottery.ticket_price * quantity
-    invoice_payload = f"lottery_{user_id}_{lottery_id}_{quantity}"
+
+    invoice_payload = f"lottery_{user_id}_{total_price}"
 
     # Запрашиваем ссылку у CryptoBot
     payment_link = await create_cryptobot_invoice(
-        user_id=user_id,
-        lottery_prize=lottery.prize,
-        quantity=quantity,
+        lottery_prize=f"Пополение баланса на {total_price}",
         total_price=total_price,
         payload=invoice_payload
     )
@@ -187,7 +173,7 @@ async def process_pay_cryptobot(callback: types.CallbackQuery):
         await callback.message.edit_text(
             f"💎 **Оплата через CryptoBot**\n\n"
             f"К оплате: {total_price} USDT\n"
-            f"Билетов: {quantity} шт.\n\n"
+            f"Билетов: {total_price} шт.\n\n"
             f"Нажмите на кнопку ниже, чтобы перейти к безопасной оплате. "
             f"После оплаты бот автоматически выдаст вам билеты.",
             parse_mode="Markdown",
@@ -209,8 +195,8 @@ async def on_pre_checkout_query(pre_checkout_q: types.PreCheckoutQuery):
         parts = payload.split("_")
 
         # ожидаем:
-        # lottery:user_id:lottery_id:quantity
-        if len(parts) != 4 or parts[0] != "lottery":
+        # lottery:user_id:quantity
+        if len(parts) != 3 or parts[0] != "lottery":
             await pre_checkout_q.answer(
                 ok=False,
                 error_message="⚠️ Некорректные данные платежа."
