@@ -160,7 +160,7 @@ async def process_pay_cryptobot(callback: types.CallbackQuery):
     print(total_price_rubles)
     usd_rate  = await get_rate("USD")
     print(usd_rate)
-    total_price = total_price_rubles * usd_rate.price
+    total_price = total_price_rubles / usd_rate.price
     print(total_price)
 
     invoice_payload = f"lottery_{user_id}_{total_price}"
