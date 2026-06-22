@@ -2,9 +2,8 @@ import logging
 import os
 
 import dotenv
-import requests
 from aiogram import Router, types, F
-from aiogram.filters import CommandStart, Command
+from aiogram.filters import CommandStart
 from aiogram.types import LabeledPrice
 from async_cb_rate.parser import get_rate
 from lava_top_sdk import LavaClient, LavaClientConfig, LogLevel, Currency, PaymentMethod
