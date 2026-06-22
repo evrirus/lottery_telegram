@@ -1,10 +1,10 @@
+from decimal import Decimal
+
 from aiogram import Router, F
 from aiogram.types import CallbackQuery
 
-from database.service.lottery import LotteryService
 from database.service.ticket import TicketService
 from database.service.user import UserService
-from database.service.winner import WinnerService
 from keyboards.inline import to_replenish_keyboard, get_payment_method_keyboard
 from service.lottery_logic import check_and_announce_winner
 
@@ -15,7 +15,7 @@ router = Router()
 async def replenish_handler(cbd: CallbackQuery):
     user = await UserService.get_user(cbd.message.chat.id)
     await cbd.message.answer(
-        f"Ваш баланс: {user.balance}р\n\n",
+        f"Ваш баланс: {user.balance.quantize(Decimal("0.01"))}р\n\n",
         reply_markup=to_replenish_keyboard()
     )
 
