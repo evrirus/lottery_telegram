@@ -1,7 +1,9 @@
 # handlers/payment_handler.py
 import logging
+
 from aiogram import Bot
-from database.models import buy_ticket
+
+from database.service.ticket import TicketService
 from service.lottery_logic import check_and_announce_winner
 
 logger = logging.getLogger(__name__)
@@ -19,7 +21,7 @@ async def process_successful_payment(bot: Bot, metadata: dict):
         logger.info(f"Processing payment for user {user_id}, lottery {lottery_id}, qty {quantity}")
 
         # Пытаемся выдать билеты (внутри buy_ticket есть защита BEGIN IMMEDIATE от гонки данных)
-        success = await buy_ticket(lottery_id, user_id, quantity)
+        success = await TicketService.buy(lottery_id, user_id, quantity)
 
         if success:
             # 1. Уведомляем пользователя

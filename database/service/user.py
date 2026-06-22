@@ -1,0 +1,41 @@
+# services/user_service.py
+from decimal import Decimal
+from tortoise.transactions import in_transaction
+
+from database.repo.user import UserRepository
+
+
+class UserService:
+
+    @staticmethod
+    async def register(telegram_id: int):
+        user = await UserRepository.get_by_tg_id(telegram_id)
+
+        if user:
+            return user
+
+        return await UserRepository.create(telegram_id)
+
+    @staticmethod
+    async def add_balance(telegram_id: int, amount: Decimal):
+        async with in_transaction():
+            user = await UserRepository.get_for_update(telegram_id)
+            user.balance += amount
+            await UserRepository.save(user)
+            return user.balance
+
+    @staticmethod
+    async def withdraw(telegram_id: int, amount: Decimal) -> bool:
+        async with in_transaction():
+            user = await UserRepository.get_for_update(telegram_id)
+
+            if user.balance < amount:
+                return False
+
+            user.balance -= amount
+            await UserRepository.save(user)
+            return True
+
+    @staticmethod
+    async def get_user(telegram_id: int):
+        return await UserRepository.get_by_tg_id(telegram_id)

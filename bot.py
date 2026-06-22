@@ -6,13 +6,12 @@ from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
 from aiogram.fsm.storage.memory import MemoryStorage
 
+import utils.shared_state as shared_state
 from config import create_session
-from database.models import init_db
-from handlers.start import router_start
+from database.models import init_tortoise
 from handlers.admin.create_lottery import router as create_lottery_router
 from handlers.admin.refund import router as refund_router
-
-import utils.shared_state as shared_state
+from handlers.start import router_start
 
 
 async def main(config):
@@ -33,7 +32,7 @@ async def main(config):
         refund_router,
     )
 
-    await init_db()
+    await init_tortoise()
 
     # 🔥 CRITICAL SECTION
     shared_state.BOT = bot
