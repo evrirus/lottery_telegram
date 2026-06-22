@@ -2,6 +2,7 @@
 import asyncio
 import logging
 
+from async_cb_rate.parser import get_rate
 from flask import Flask, request
 
 from config import init_config
@@ -13,7 +14,7 @@ app = Flask(__name__)
 
 
 @app.route("/cryptobot-webhook", methods=["POST"])
-def webhook_cryptobot():
+async def webhook_cryptobot():
     try:
         data = request.get_json(silent=True)
 
@@ -43,10 +44,10 @@ def webhook_cryptobot():
         print(parts)
         if len(parts) != 3:
             return "OK", 200
-
+        rate_usd = await get_rate("USD")
         metadata = {
             "user_id": int(parts[1]),
-            "quantity": int(parts[2]),
+            "quantity": int(parts[2]) * rate_usd.price,
         }
 
         asyncio.run_coroutine_threadsafe(
