@@ -6,6 +6,7 @@ import requests
 from aiogram import Router, types, F
 from aiogram.filters import CommandStart, Command
 from aiogram.types import LabeledPrice
+from async_cb_rate.parser import get_rate
 from lava_top_sdk import LavaClient, LavaClientConfig, LogLevel, Currency, PaymentMethod
 
 from database.service.lottery import LotteryService
@@ -156,9 +157,10 @@ async def process_pay_cryptobot(callback: types.CallbackQuery):
 
     parts = callback.data.split("_")
     user_id = int(parts[3])
-    total_price = int(parts[4])
+    total_price_rubles = int(parts[4])
 
-
+    usd_rate  = await get_rate("USD")
+    total_price = total_price_rubles * usd_rate.price
 
     invoice_payload = f"lottery_{user_id}_{total_price}"
 
