@@ -1,5 +1,7 @@
 import logging
+import os
 
+import dotenv
 from aiogram import Router, types, F
 from aiogram.filters import CommandStart, Command
 from aiogram.types import LabeledPrice
@@ -10,11 +12,13 @@ from keyboards.inline import get_ticket_quantity_keyboard, get_active_lotteries_
 from service.cryptobot import create_cryptobot_invoice
 from service.lottery_logic import check_and_announce_winner
 
+dotenv.load_dotenv()
+
 logger = logging.getLogger()
 router_start = Router()
 config = LavaClientConfig(
-    api_key='your-api-key',
-    env='sandbox',  # or 'production'
+    api_key=os.getenv("LAVATOP_TOKEN"),
+    env='production',  # or 'production' or 'sandbox'
     webhook_secret_key='your-webhook-secret',
     logging_level=LogLevel.DEBUG
 )
