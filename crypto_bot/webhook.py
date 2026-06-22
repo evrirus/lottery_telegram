@@ -44,7 +44,9 @@ def webhook_cryptobot():
         print(parts)
         if len(parts) != 3:
             return "OK", 200
-        rate_usd = asyncio.run(get_rate("USD"))
+
+        future = asyncio.run_coroutine_threadsafe(get_rate("USD"), loop)
+        rate_usd = future.result()
         metadata = {
             "user_id": int(parts[1]),
             "quantity": int(parts[2]) * rate_usd.price,
