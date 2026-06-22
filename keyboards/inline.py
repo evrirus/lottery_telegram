@@ -42,6 +42,8 @@ def get_active_lotteries_keyboard(lotteries: list) -> InlineKeyboardMarkup:
     for lottery in lotteries:
 
         available = lottery.total_tickets - lottery.sold_tickets
+        if not available:
+            continue
         # Обрезаем длинное название приза для красоты кнопки
         prize_short = lottery['prize'][:25] + "..." if len(lottery.prize) > 25 else lottery.prize
 
