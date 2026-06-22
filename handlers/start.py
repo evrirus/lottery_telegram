@@ -135,6 +135,7 @@ async def process_pay_stars(callback: types.CallbackQuery):
     parts = callback.data.split("_")
     user_id = int(parts[3])
     total_price = int(parts[4])
+    stars = round(total_price * 0.9)
 
     invoice_payload = f"lottery_{user_id}_{total_price}"
 
@@ -145,7 +146,7 @@ async def process_pay_stars(callback: types.CallbackQuery):
         payload=invoice_payload,
         provider_token="",
         currency="XTR",
-        prices=[LabeledPrice(label="Итого", amount=total_price)],
+        prices=[LabeledPrice(label="Итого", amount=stars)],
     )
 
 
@@ -208,6 +209,7 @@ async def on_pre_checkout_query(pre_checkout_q: types.PreCheckoutQuery):
         user_id = int(parts[1])
         lottery_id = int(parts[2])
         quantity = int(parts[3])
+        stars = quantity * 0.9
 
         # защита от подмены пользователя
         if pre_checkout_q.from_user.id != user_id:
