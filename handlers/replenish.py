@@ -1,8 +1,10 @@
 from aiogram import Router, F
 from aiogram.types import CallbackQuery
 
+from database.service.lottery import LotteryService
 from database.service.ticket import TicketService
 from database.service.user import UserService
+from database.service.winner import WinnerService
 from keyboards.inline import to_replenish_keyboard, get_payment_method_keyboard
 
 router = Router()
@@ -35,3 +37,4 @@ async def buy_tickets_handler(cbd: CallbackQuery):
     print(parts)
     await TicketService.buy(lottery_id, cbd.from_user.id, qty)
     await cbd.message.answer(f"Вы купили {qty} билетов!")
+    await WinnerService.pick_winner(lottery_id)
