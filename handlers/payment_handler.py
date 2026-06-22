@@ -2,8 +2,10 @@
 import logging
 
 from aiogram import Bot
+from tortoise.transactions import in_transaction
 
 from database.service.ticket import TicketService
+from database.service.user import UserService
 from service.lottery_logic import check_and_announce_winner
 
 logger = logging.getLogger(__name__)
@@ -22,13 +24,16 @@ async def process_successful_payment(bot: Bot, metadata: dict):
 
         # Пытаемся выдать билеты (внутри buy_ticket есть защита BEGIN IMMEDIATE от гонки данных)
         success = await TicketService.buy(lottery_id, user_id, quantity)
+        async with in_transaction():
+            await UserService.add_balance(user_id, quantity)
+
 
         if success:
             # 1. Уведомляем пользователя
             await bot.send_message(
                 chat_id=user_id,
                 text=f"✅ Оплата через CryptoBot прошла успешно!\n"
-                     f"Вы купили {quantity} билет(ов). Удачи в розыгрыше! 🍀"
+                     f"Ваш баланс пополнен на {quantity}. Удачи в розыгрышах! 🍀"
             )
 
             # 2. Проверяем, не стал ли этот покупатель тем, кто выкупил последний билет
