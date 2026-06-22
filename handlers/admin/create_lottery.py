@@ -36,9 +36,17 @@ async def process_prize(message: Message, state: FSMContext):
     await state.set_state(CreateLotteryState.waiting_for_price)
 
 
-@router.message(CreateLotteryState.waiting_for_price, F.text.isdigit())
+@router.message(CreateLotteryState.waiting_for_price)
 async def process_price(message: Message, state: FSMContext):
-    await state.update_data(price=int(message.text))
+    if not message.text.isdigit():
+        return await message.answer("Введите число")
+
+    price = int(message.text)
+
+    if price < 100:
+        return await message.answer("Цена билета не может быть меньше 100 ₽")
+
+    await state.update_data(price=price)
     await message.answer("Введите общее количество билетов:")
     await state.set_state(CreateLotteryState.waiting_for_total)
 
