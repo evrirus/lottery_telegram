@@ -43,7 +43,7 @@ def get_active_lotteries_keyboard(lotteries: list) -> InlineKeyboardMarkup:
 
         available = lottery.total_tickets - lottery.sold_tickets
         # Обрезаем длинное название приза для красоты кнопки
-        prize_short = lottery['prize'][:25] + "..." if len(lottery['prize']) > 25 else lottery['prize']
+        prize_short = lottery['prize'][:25] + "..." if len(lottery.prize) > 25 else lottery.prize
 
         builder.button(
             text=f"🎫 {prize_short} ({available} ост.)",
@@ -90,8 +90,8 @@ def get_payment_method_keyboard(user_id: int, lottery_id: int, quantity: int) ->
 def start_keyboard() -> InlineKeyboardMarkup:
     builder = InlineKeyboardBuilder()
     builder.button(
-        text="lotteries",
-        callback_data="Лотереи"
+        text="Лотереи",
+        callback_data="lotteries"
     )
     builder.button(
         text="Пополнить",
