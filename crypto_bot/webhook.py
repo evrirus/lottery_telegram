@@ -13,7 +13,7 @@ app = Flask(__name__)
 
 
 @app.route("/cryptobot-webhook", methods=["POST"])
-def webhook():
+def webhook_cryptobot():
     try:
         data = request.get_json(silent=True)
 
@@ -60,6 +60,14 @@ def webhook():
         logger.error(e, exc_info=True)
         return "OK", 200
 
+
+@app.route("/lavatop-webhook", methods=["POST"])
+def webhook_lavatop():
+    data = request.get_json(silent=True)
+    print(data)
+
+    if not data:
+        return "OK", 200
 
 if __name__ == '__main__':
     init_config(debug=False)
