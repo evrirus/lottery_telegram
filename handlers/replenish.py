@@ -6,6 +6,7 @@ from database.service.ticket import TicketService
 from database.service.user import UserService
 from database.service.winner import WinnerService
 from keyboards.inline import to_replenish_keyboard, get_payment_method_keyboard
+from service.lottery_logic import check_and_announce_winner
 
 router = Router()
 
@@ -39,6 +40,7 @@ async def buy_tickets_handler(cbd: CallbackQuery):
     success, reason = await TicketService.buy(lottery_id, cbd.from_user.id, qty)
     if success:
         await cbd.message.answer(f"Вы купили {qty} билетов!")
-        return await WinnerService.pick_winner(lottery_id)
+        await check_and_announce_winner(lottery_id, bot=cbd.bot)
+        return
 
     await cbd.message.answer(reason)
