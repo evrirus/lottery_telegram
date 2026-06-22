@@ -47,7 +47,7 @@ def get_active_lotteries_keyboard(lotteries: list) -> InlineKeyboardMarkup:
 
         builder.button(
             text=f"🎫 {prize_short} ({available} ост.)",
-            callback_data=f"select_lottery_{lottery['id']}"
+            callback_data=f"select_lottery_{lottery.id}"
         )
 
     # Выстраиваем по 1 кнопке в ряд для удобства чтения
