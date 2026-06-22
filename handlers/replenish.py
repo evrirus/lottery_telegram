@@ -1,6 +1,7 @@
 from aiogram import Router, F
 from aiogram.types import CallbackQuery
 
+from database.service.ticket import TicketService
 from database.service.user import UserService
 from keyboards.inline import to_replenish_keyboard, get_payment_method_keyboard
 
@@ -25,3 +26,12 @@ async def replenish__handler(cbd: CallbackQuery):
             amount=amount
         )
     )
+
+@router.callback_query(lambda c: c.data.startswith("buy_tickets_"))
+async def buy_tickets_handler(cbd: CallbackQuery):
+    parts = cbd.data.split("_")
+    qty = int(parts[2])
+    lottery_id = int(parts[3])
+    print(parts)
+    await TicketService.buy(lottery_id, cbd.from_user.id, qty)
+    await cbd.message.answer(f"Вы купили {qty} билетов!")
