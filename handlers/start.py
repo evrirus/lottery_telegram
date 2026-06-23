@@ -165,8 +165,7 @@ async def process_pay_stars(callback: types.CallbackQuery):
         payload=invoice_payload,
         provider_token="",
         currency="XTR",
-        prices=[LabeledPrice(label="Итого", amount=stars)],
-        reply_markup=inline_exit_to_payment_method()
+        prices=[LabeledPrice(label="Итого", amount=stars)]
     )
 
 
