@@ -1,5 +1,6 @@
 import logging
 import os
+from decimal import Decimal
 
 import dotenv
 from aiogram import Router, types, F
@@ -219,7 +220,7 @@ async def on_pre_checkout_query(pre_checkout_q: types.PreCheckoutQuery):
         parts = payload.split("_")
 
         # ожидаем:
-        # lottery:user_id:quantity
+        # lottery_{user_id}_{total_price_rubles}
         if len(parts) != 3 or parts[0] != "lottery":
             await pre_checkout_q.answer(
                 ok=False,
@@ -228,8 +229,7 @@ async def on_pre_checkout_query(pre_checkout_q: types.PreCheckoutQuery):
             return
 
         user_id = int(parts[1])
-        lottery_id = int(parts[2])
-        quantity = int(parts[3])
+        quantity = parts[2]
 
         # защита от подмены пользователя
         if pre_checkout_q.from_user.id != user_id:
@@ -239,14 +239,7 @@ async def on_pre_checkout_query(pre_checkout_q: types.PreCheckoutQuery):
             )
             return
 
-        is_available = await LotteryService.check_ticket_availability(lottery_id, quantity)
-
-        if not is_available:
-            await pre_checkout_q.answer(
-                ok=False,
-                error_message=f"❌ Недостаточно билетов ({quantity})."
-            )
-            return
+        await UserService.add_balance(user_id, Decimal(quantity))
 
         await pre_checkout_q.answer(ok=True)
 
