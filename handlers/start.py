@@ -154,8 +154,7 @@ async def process_pay_stars(callback: types.CallbackQuery):
     parts = callback.data.split("_")
     user_id = int(parts[3])
     total_price = int(parts[4])
-    # stars = round(total_price * 0.9)
-    stars = 1 #todo: uncomment
+    stars = round(total_price * 0.9)
 
     invoice_payload = f"lottery_{user_id}_{total_price}"
 

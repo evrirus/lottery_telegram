@@ -71,6 +71,7 @@ def webhook_cryptobot():
 @app.route("/lavatop-webhook", methods=["POST"])
 def webhook_lavatop():
     try:
+        print(request.headers)
         api_key = request.headers.get("X-Api-Key")
 
         if not api_key:
