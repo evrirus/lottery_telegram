@@ -4,7 +4,7 @@ import os
 import dotenv
 from aiogram import Router, types, F
 from aiogram.filters import CommandStart
-from aiogram.types import LabeledPrice
+from aiogram.types import LabeledPrice, InlineKeyboardButton, InlineKeyboardMarkup
 from async_cb_rate.parser import get_rate
 from lava_top_sdk import LavaClient, LavaClientConfig, LogLevel, Currency, PaymentMethod
 
@@ -12,7 +12,7 @@ from database.service.lottery import LotteryService
 from database.service.ticket import TicketService
 from database.service.user import UserService
 from keyboards.inline import get_ticket_quantity_keyboard, get_active_lotteries_keyboard, get_payment_method_keyboard, \
-    start_keyboard, last_keyboard_buy
+    start_keyboard, last_keyboard_buy, inline_exit_to_payment_method
 from service.cryptobot import create_cryptobot_invoice
 from service.lottery_logic import check_and_announce_winner
 
@@ -48,10 +48,24 @@ async def show_lotteries_list(target: types.Message | types.CallbackQuery):
 
     if not lotteries:
         text = "🕊 Сейчас нет активных лотерей. Следите за обновлениями!"
+        button = [
+            [InlineKeyboardButton(text="❌ Отмена", callback_data="cancel_buy")]
+        ]
+
         if isinstance(target, types.Message):
-            await target.answer(text)
+            await target.answer(
+                text,
+                reply_markup=InlineKeyboardMarkup(
+                    inline_keyboard=button
+                )
+            )
         else:
-            await target.message.edit_text(text)
+            await target.message.edit_text(
+                text,
+                reply_markup=InlineKeyboardMarkup(
+                    inline_keyboard=button
+                )
+            )
             await target.answer()  # Снимаем часики загрузки
         return
 
@@ -128,11 +142,12 @@ async def process_buy_quantity(callback: types.CallbackQuery):
 
 @router_start.callback_query(F.data.startswith("pay_stars_lottery_"))
 async def process_pay_stars(callback: types.CallbackQuery):
-    # payload: pay_stars_lottery_{user_id}_{lottery_id}_{quantity}
+    # payload: pay_stars_lottery_{user_id}_{quantity}
     parts = callback.data.split("_")
     user_id = int(parts[3])
     total_price = int(parts[4])
-    stars = round(total_price * 0.9)
+    # stars = round(total_price * 0.9)
+    stars = 1 #todo: uncomment
 
     invoice_payload = f"lottery_{user_id}_{total_price}"
 
@@ -144,8 +159,8 @@ async def process_pay_stars(callback: types.CallbackQuery):
         provider_token="",
         currency="XTR",
         prices=[LabeledPrice(label="Итого", amount=stars)],
+        reply_markup=inline_exit_to_payment_method()
     )
-
 
 
 @router_start.callback_query(F.data.startswith("pay_cryptobot_lottery_"))
@@ -155,17 +170,14 @@ async def process_pay_cryptobot(callback: types.CallbackQuery):
     parts = callback.data.split("_")
     user_id = int(parts[3])
     total_price_rubles = int(parts[4])
-    print(total_price_rubles)
     usd_rate  = await get_rate("USD")
-    print(usd_rate)
     total_price = round(total_price_rubles / usd_rate.price, 2)
-    print(total_price)
 
     invoice_payload = f"lottery_{user_id}_{total_price_rubles}"
 
     # Запрашиваем ссылку у CryptoBot
     payment_link = await create_cryptobot_invoice(
-        lottery_prize=f"Пополение баланса на {total_price_rubles}",
+        lottery_prize=f"Пополнение баланса на {total_price_rubles}",
         total_price=total_price,
         payload=invoice_payload,
         rate=usd_rate.price
@@ -173,13 +185,13 @@ async def process_pay_cryptobot(callback: types.CallbackQuery):
 
     if payment_link:
         await callback.message.edit_text(
-            f"💎 **Оплата через CryptoBot**\n\n"
+            f"💎 <b>Оплата через CryptoBot</b>\n\n"
             f"К оплате: {total_price} USDT\n\n"
             f"Нажмите на кнопку ниже, чтобы перейти к безопасной оплате. "
             f"После оплаты бот автоматически выдаст вам билеты.",
-            parse_mode="Markdown",
             reply_markup=types.InlineKeyboardMarkup(inline_keyboard=[
-                [types.InlineKeyboardButton(text="💳 Оплатить сейчас", url=payment_link)]
+                [types.InlineKeyboardButton(text="💳 Оплатить сейчас", url=payment_link),],
+                [inline_exit_to_payment_method()]
             ])
         )
     else:
@@ -207,7 +219,6 @@ async def on_pre_checkout_query(pre_checkout_q: types.PreCheckoutQuery):
         user_id = int(parts[1])
         lottery_id = int(parts[2])
         quantity = int(parts[3])
-        stars = quantity * 0.9
 
         # защита от подмены пользователя
         if pre_checkout_q.from_user.id != user_id:
