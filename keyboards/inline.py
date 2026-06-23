@@ -89,11 +89,11 @@ def get_payment_method_keyboard(user_id: int, amount: int) -> InlineKeyboardMark
 def start_keyboard() -> InlineKeyboardMarkup:
     builder = InlineKeyboardBuilder()
     builder.button(
-        text="Лотереи",
+        text="🎉 Лотереи",
         callback_data="lotteries"
     )
     builder.button(
-        text="Пополнить",
+        text="💰 Пополнить",
         callback_data="replenish"
     )
     builder.adjust(1, repeat=True)
@@ -125,4 +125,9 @@ def last_keyboard_buy(qty: int, lottery_id: int) -> InlineKeyboardMarkup:
         text="Купить",
         callback_data=f"buy_tickets_{qty}_{lottery_id}"
     )
+    return builder.as_markup()
+
+def inline_exit_to_payment_method():
+    builder = InlineKeyboardBuilder()
+    builder.button(text="Закрыть", callback_data="replenish")
     return builder.as_markup()

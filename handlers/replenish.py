@@ -24,7 +24,7 @@ async def replenish_handler(cbd: CallbackQuery):
 async def replenish__handler(cbd: CallbackQuery):
     amount = int(cbd.data.split("_")[1])
     await cbd.message.answer(
-        "скоко?",
+        "Выберите платёжное средство.",
         reply_markup=get_payment_method_keyboard(
             user_id=cbd.message.chat.id,
             amount=amount

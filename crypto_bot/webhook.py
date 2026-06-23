@@ -2,7 +2,6 @@
 import asyncio
 import logging
 
-from async_cb_rate.parser import get_rate
 from flask import Flask, request
 
 from config import init_config, get_config
@@ -19,7 +18,6 @@ def webhook_cryptobot():
     try:
         config = get_config()
         verify = verify_crypto_pay_signature(config.CRYPTOBOT_TOKEN, request=request)
-        print(f"verify: {verify}")
         if not verify:
             return "invalid signature", 403
 
