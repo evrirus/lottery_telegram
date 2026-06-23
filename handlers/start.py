@@ -216,7 +216,6 @@ async def process_pay_cryptobot(callback: types.CallbackQuery):
 async def on_pre_checkout_query(pre_checkout_q: types.PreCheckoutQuery):
     try:
         payload = pre_checkout_q.invoice_payload
-
         parts = payload.split("_")
 
         # ожидаем:
@@ -229,7 +228,6 @@ async def on_pre_checkout_query(pre_checkout_q: types.PreCheckoutQuery):
             return
 
         user_id = int(parts[1])
-        quantity = parts[2]
 
         # защита от подмены пользователя
         if pre_checkout_q.from_user.id != user_id:
@@ -238,8 +236,6 @@ async def on_pre_checkout_query(pre_checkout_q: types.PreCheckoutQuery):
                 error_message="⚠️ Несоответствие пользователя платежа."
             )
             return
-
-        await UserService.add_balance(user_id, Decimal(quantity))
 
         await pre_checkout_q.answer(ok=True)
 
