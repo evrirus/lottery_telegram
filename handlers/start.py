@@ -191,15 +191,20 @@ async def process_pay_cryptobot(callback: types.CallbackQuery):
     )
 
     if payment_link:
+        kb = types.InlineKeyboardMarkup(inline_keyboard=[
+            [types.InlineKeyboardButton(text="💳 Оплатить сейчас", url=payment_link)],
+        ])
+
+        kb.inline_keyboard.extend(
+            inline_exit_to_payment_method().inline_keyboard
+        )
+
         await callback.message.edit_text(
             f"💎 <b>Оплата через CryptoBot</b>\n\n"
             f"К оплате: {total_price} USDT\n\n"
             f"Нажмите на кнопку ниже, чтобы перейти к безопасной оплате. "
             f"После оплаты бот автоматически выдаст вам билеты.",
-            reply_markup=types.InlineKeyboardMarkup(inline_keyboard=[
-                [types.InlineKeyboardButton(text="💳 Оплатить сейчас", url=payment_link),],
-                [inline_exit_to_payment_method()]
-            ])
+            reply_markup=kb
         )
     else:
         await callback.message.edit_text(
