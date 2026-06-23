@@ -15,7 +15,7 @@ router = Router()
 async def replenish_handler(cbd: CallbackQuery):
     user = await UserService.get_user(cbd.message.chat.id)
     balance = user.balance.quantize(Decimal("1"))
-    await cbd.message.answer(
+    await cbd.message.edit_text(
         f"Ваш баланс: {balance}р\n\n",
         reply_markup=to_replenish_keyboard()
     )
@@ -23,7 +23,7 @@ async def replenish_handler(cbd: CallbackQuery):
 @router.callback_query(lambda c: c.data.startswith("replenish_"))
 async def replenish__handler(cbd: CallbackQuery):
     amount = int(cbd.data.split("_")[1])
-    await cbd.message.answer(
+    await cbd.message.edit_text(
         "Выберите платёжное средство.",
         reply_markup=get_payment_method_keyboard(
             user_id=cbd.message.chat.id,
