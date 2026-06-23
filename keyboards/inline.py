@@ -79,7 +79,7 @@ def get_payment_method_keyboard(user_id: int, amount: int) -> InlineKeyboardMark
         callback_data=f"pay_lavatop_{payload}"
     )
 
-    builder.button(text="❌ Отмена", callback_data="cancel_buy")
+    builder.button(text="❌ Отмена", callback_data="start")
 
     # Выстраиваем по 1 кнопке в ряд для удобства нажатия
     builder.adjust(1)

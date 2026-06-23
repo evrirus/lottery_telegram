@@ -39,7 +39,7 @@ async def cmd_start(message: types.Message):
 
 @router_start.callback_query(F.data == "start")
 async def cmd_start(cbd: CallbackQuery):
-    await cbd.message.answer(
+    await cbd.message.edit_text(
         "Выберите действие",
         reply_markup=start_keyboard()
     )
