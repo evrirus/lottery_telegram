@@ -253,18 +253,17 @@ async def on_pre_checkout_query(pre_checkout_q: types.PreCheckoutQuery):
 
 @router_start.message(F.successful_payment)
 async def on_successful_payment(message: types.Message):
+    # ожидаем:
+    # lottery_{user_id}_{total_price_rubles}
     payload = message.successful_payment.invoice_payload
     parts = payload.split("_")
-    lottery_id = int(parts[2])
-    quantity = int(parts[3])
+    user_id = int(parts[1])
+    quantity = parts[2]
 
-    success = await TicketService.buy(lottery_id, message.from_user.id, quantity)
+    success = await UserService.add_balance(user_id, Decimal(quantity))
 
     if success:
-        await message.answer(f"✅ Оплата прошла! Вы купили {quantity} билет(ов). Удачи! 🍀")
-        await check_and_announce_winner(lottery_id, bot=message.bot)
-    else:
-        await message.answer("❌ К сожалению, билеты только что закончились. Обратитесь в поддержку.")
+        await message.answer(f"⭐ Оплата прошла успешно! Ваш баланс пополнен на {quantity}р. Удачи в розыгрышах! 🍀")
 
 
 @router_start.callback_query(F.data.startswith("pay_lavatop_lottery_"))
