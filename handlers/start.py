@@ -4,7 +4,7 @@ import os
 import dotenv
 from aiogram import Router, types, F
 from aiogram.filters import CommandStart
-from aiogram.types import LabeledPrice, InlineKeyboardButton, InlineKeyboardMarkup
+from aiogram.types import LabeledPrice, InlineKeyboardButton, InlineKeyboardMarkup, CallbackQuery
 from async_cb_rate.parser import get_rate
 from lava_top_sdk import LavaClient, LavaClientConfig, LogLevel, Currency, PaymentMethod
 
@@ -37,6 +37,13 @@ async def cmd_start(message: types.Message):
         reply_markup=start_keyboard()
     )
 
+@router_start.callback_query(F.data == "start")
+async def cmd_start(cbd: CallbackQuery):
+    await cbd.message.answer(
+        "Выберите действие",
+        reply_markup=start_keyboard()
+    )
+
 @router_start.callback_query(lambda c: c.data == "lotteries")
 async def cmd_lotteries(cbd: types.CallbackQuery):
     await show_lotteries_list(cbd)
@@ -49,7 +56,7 @@ async def show_lotteries_list(target: types.Message | types.CallbackQuery):
     if not lotteries:
         text = "🕊 Сейчас нет активных лотерей. Следите за обновлениями!"
         button = [
-            [InlineKeyboardButton(text="❌ Отмена", callback_data="cancel_buy")]
+            [InlineKeyboardButton(text="❌ Отмена", callback_data="start")]
         ]
 
         if isinstance(target, types.Message):
