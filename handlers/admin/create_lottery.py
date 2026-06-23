@@ -1,4 +1,5 @@
 from aiogram import Router, F
+from aiogram.exceptions import TelegramBadRequest
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
@@ -61,11 +62,48 @@ async def process_total(message: Message, state: FSMContext):
 
 @router.message(CreateLotteryState.waiting_for_channel)
 async def process_channel(message: Message, state: FSMContext):
-    channel_id = message.forward_from_chat.id if message.forward_from_chat else int(message.text)
+    try:
+        channel_id = (
+            message.forward_from_chat.id
+            if message.forward_from_chat
+            else int(message.text)
+        )
+    except ValueError:
+        await message.answer("❌ Укажите корректный ID канала.")
+        return
+
+    try:
+        # Проверяем, есть ли бот в чате
+        me = await message.bot.get_me()
+        member = await message.bot.get_chat_member(channel_id, me.id)
+
+        if member.status in ("left", "kicked"):
+            await message.answer(
+                "❌ Бот не состоит в указанном канале/группе. Добавьте бота и выдайте ему необходимые права."
+            )
+            return
+
+    except TelegramBadRequest:
+        await message.answer(
+            "❌ Не удалось получить информацию о канале.\n"
+            "Убедитесь, что бот добавлен в канал/группу и имеет доступ к нему."
+        )
+        return
+
     data = await state.get_data()
 
-    await LotteryService.create(data['prize'], data['price'], data['total'], channel_id)
-    await message.answer(
-        f"✅ Лотерея создана!\nПриз: {data['prize']}\nЦена: {data['price']}\nВсего билетов: {data['total']}"
+    await LotteryService.create(
+        data["prize"],
+        data["price"],
+        data["total"],
+        channel_id
     )
+
+    await message.answer(
+        f"✅ Лотерея создана!\n"
+        f"Приз: {data['prize']}\n"
+        f"Цена: {data['price']}\n"
+        f"Всего билетов: {data['total']}"
+    )
+
     await state.clear()
