@@ -82,7 +82,7 @@ async def show_lotteries_list(target: types.Message | types.CallbackQuery):
         await message.edit_text(text, reply_markup=keyboard)
     except TelegramBadRequest:
         # если это photo/video/media → fallback
-        await message.answer(text, reply_markup=keyboard)
+        await message.edit_caption(text, reply_markup=keyboard)
 
     await target.answer()
 
