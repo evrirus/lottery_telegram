@@ -5,7 +5,7 @@ from decimal import Decimal
 import dotenv
 from aiogram import Router, types, F
 from aiogram.filters import CommandStart
-from aiogram.types import LabeledPrice, InlineKeyboardButton, InlineKeyboardMarkup, CallbackQuery
+from aiogram.types import LabeledPrice, InlineKeyboardButton, InlineKeyboardMarkup, CallbackQuery, InputMediaPhoto
 from async_cb_rate.parser import get_rate
 from lava_top_sdk import LavaClient, LavaClientConfig, LogLevel, Currency, PaymentMethod
 
@@ -108,14 +108,21 @@ async def process_select_lottery(callback: types.CallbackQuery):
         await callback.answer("🎉 Все билеты в этой лотерее распроданы!", show_alert=True)
         return
 
-    await callback.message.edit_text(
-        f"🎁 **Лотерея #{lottery.id}**\n\n"
-        f"🏆 Приз: {lottery.prize}\n"
-        f"💰 Цена билета: {lottery.ticket_price} ⭐️\n"
-        f"📊 Продано: {lottery.sold_tickets} из {lottery.total_tickets}\n\n"
-        f"Выберите количество билетов:",
-        parse_mode="Markdown",
-        reply_markup=get_ticket_quantity_keyboard(lottery.id, available_tickets)
+    await callback.message.edit_media(
+        media=InputMediaPhoto(
+            media=lottery.photo_file_id,
+            caption=(
+                f"🎁 <b>Лотерея #{lottery.id}</b>\n\n"
+                f"🏆 Приз: {lottery.prize}\n"
+                f"💰 Цена билета: {lottery.ticket_price} ⭐️\n"
+                f"📊 Продано: {lottery.sold_tickets} из {lottery.total_tickets}\n\n"
+                f"Выберите количество билетов:"
+            ),
+        ),
+        reply_markup=get_ticket_quantity_keyboard(
+            lottery.id,
+            available_tickets
+        )
     )
     await callback.answer()
 
