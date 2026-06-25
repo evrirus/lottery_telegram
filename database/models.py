@@ -35,7 +35,7 @@ class Lottery(models.Model):
     sold_tickets = fields.IntField(default=0)
 
     channel_id = fields.BigIntField()
-    photo_file_id = fields.CharField(max_length=300) #todo исправить длину
+    photo_file_id = fields.CharField(max_length=300, null=True) #todo исправить длину
 
     status = fields.CharField(max_length=20, default="active")
     winner_user_id = fields.BigIntField(null=True)
