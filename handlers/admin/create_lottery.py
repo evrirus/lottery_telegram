@@ -3,10 +3,11 @@ from aiogram.exceptions import TelegramBadRequest
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
-from aiogram.types import Message
+from aiogram.types import Message, CallbackQuery
 
 from config import get_config
 from database.service.lottery import LotteryService
+from keyboards.inline import lottery_preview_keyboard
 
 router = Router()
 
@@ -16,7 +17,8 @@ class CreateLotteryState(StatesGroup):
     waiting_for_price = State()
     waiting_for_total = State()
     waiting_for_channel = State()
-
+    waiting_for_photo = State()
+    waiting_for_publish = State()
 
 @router.message(Command("create"))
 async def cmd_create(message: Message, state: FSMContext):
@@ -52,13 +54,75 @@ async def process_price(message: Message, state: FSMContext):
     await state.set_state(CreateLotteryState.waiting_for_total)
 
 
-@router.message(CreateLotteryState.waiting_for_total, F.text.isdigit())
+@router.message(CreateLotteryState.waiting_for_total)
 async def process_total(message: Message, state: FSMContext):
+    if not message.text.isdigit():
+        return await message.answer("Введите число")
+
     await state.update_data(total=int(message.text))
+
     await message.answer(
-        "Перешлите любое сообщение из канала, куда нужно отправить итоговый пост (или введите ID канала, например -100123456789):")
+        "Перешлите сообщение из канала или введите ID канала:"
+    )
+
     await state.set_state(CreateLotteryState.waiting_for_channel)
 
+@router.callback_query(
+    CreateLotteryState.waiting_for_publish,
+    F.data == "lottery_add_photo"
+)
+async def add_photo(callback: CallbackQuery, state: FSMContext):
+    await state.set_state(CreateLotteryState.waiting_for_photo)
+
+    await callback.message.answer(
+        "Отправьте фотографию для розыгрыша."
+    )
+
+    await callback.answer()
+
+
+@router.message(CreateLotteryState.waiting_for_photo, F.photo)
+async def process_photo(message: Message, state: FSMContext):
+    await state.update_data(photo=message.photo[-1].file_id)
+
+    data = await state.get_data()
+
+    await message.answer(
+        "🎲 Обновлённый розыгрыш:\n\n"
+        f"🎁 Приз: {data['prize']}\n"
+        f"💰 Цена: {data['price']} ₽\n"
+        f"🎫 Билеты: {data['total']}\n"
+        f"📢 Канал: {data['channel_id']}\n"
+        f"📷 Фото: добавлено",
+        reply_markup=lottery_preview_keyboard()
+    )
+
+    await state.set_state(CreateLotteryState.waiting_for_publish)
+
+
+@router.callback_query(
+    CreateLotteryState.waiting_for_publish,
+    F.data == "lottery_publish"
+)
+async def publish_lottery(
+    callback: CallbackQuery,
+    state: FSMContext
+):
+    data = await state.get_data()
+
+    await LotteryService.create(
+        data["prize"],
+        data["price"],
+        data["total"],
+        data["channel_id"],
+        data.get("photo")
+    )
+
+    await callback.message.edit_text(
+        "✅ Лотерея создана!"
+    )
+
+    await state.clear()
 
 @router.message(CreateLotteryState.waiting_for_channel)
 async def process_channel(message: Message, state: FSMContext):
@@ -69,41 +133,33 @@ async def process_channel(message: Message, state: FSMContext):
             else int(message.text)
         )
     except ValueError:
-        await message.answer("❌ Укажите корректный ID канала.")
-        return
+        return await message.answer("❌ Укажите корректный ID канала.")
 
     try:
-        # Проверяем, есть ли бот в чате
         me = await message.bot.get_me()
         member = await message.bot.get_chat_member(channel_id, me.id)
 
         if member.status in ("left", "kicked"):
-            await message.answer(
-                "❌ Бот не состоит в указанном канале/группе. Добавьте бота и выдайте ему необходимые права."
+            return await message.answer(
+                "❌ Бот не состоит в канале."
             )
-            return
 
     except TelegramBadRequest:
-        await message.answer(
-            "❌ Не удалось получить информацию о канале.\n"
-            "Убедитесь, что бот добавлен в канал/группу и имеет доступ к нему."
+        return await message.answer(
+            "❌ Не удалось получить информацию о канале."
         )
-        return
+
+    await state.update_data(channel_id=channel_id)
 
     data = await state.get_data()
 
-    await LotteryService.create(
-        data["prize"],
-        data["price"],
-        data["total"],
-        channel_id
-    )
-
     await message.answer(
-        f"✅ Лотерея создана!\n"
-        f"Приз: {data['prize']}\n"
-        f"Цена: {data['price']}\n"
-        f"Всего билетов: {data['total']}"
+        "🎲 Будет создан следующий розыгрыш:\n\n"
+        f"🎁 Приз: {data['prize']}\n"
+        f"💰 Цена билета: {data['price']} ₽\n"
+        f"🎫 Количество билетов: {data['total']}\n"
+        f"📢 Канал: {channel_id}",
+        reply_markup=lottery_preview_keyboard()
     )
 
-    await state.clear()
+    await state.set_state(CreateLotteryState.waiting_for_publish)
