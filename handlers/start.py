@@ -4,6 +4,7 @@ from decimal import Decimal
 
 import dotenv
 from aiogram import Router, types, F
+from aiogram.exceptions import TelegramBadRequest
 from aiogram.filters import CommandStart
 from aiogram.types import LabeledPrice, InlineKeyboardButton, InlineKeyboardMarkup, CallbackQuery, InputMediaPhoto
 from async_cb_rate.parser import get_rate
@@ -51,45 +52,39 @@ async def cmd_lotteries(cbd: types.CallbackQuery):
 
 
 async def show_lotteries_list(target: types.Message | types.CallbackQuery):
-    """Универсальная функция для показа списка лотерей (работает и для Message, и для CallbackQuery)"""
     lotteries = await LotteryService.get_actives()
 
-    if not lotteries:
-        text = "🕊 Сейчас нет активных лотерей. Следите за обновлениями!"
-        button = [
-            [InlineKeyboardButton(text="❌ Отмена", callback_data="start")]
-        ]
+    text = (
+        "📋 <b>Список активных лотерей:</b>\n\n"
+        "Выберите интересующую вас лотерею:"
+    )
 
-        if isinstance(target, types.Message):
-            await target.answer(
-                text,
-                reply_markup=InlineKeyboardMarkup(
-                    inline_keyboard=button
-                )
-            )
-        else:
-            await target.message.edit_text(
-                text,
-                reply_markup=InlineKeyboardMarkup(
-                    inline_keyboard=button
-                )
-            )
-            await target.answer()  # Снимаем часики загрузки
+    keyboard = (
+        get_active_lotteries_keyboard(lotteries)
+        if lotteries
+        else InlineKeyboardMarkup(
+            inline_keyboard=[
+                [InlineKeyboardButton(text="❌ Отмена", callback_data="start")]
+            ]
+        )
+    )
+
+    message = target.message if isinstance(target, types.CallbackQuery) else target
+
+    # --- CASE 1: Message ---
+    if isinstance(target, types.Message):
+        await target.answer(text, reply_markup=keyboard)
         return
 
-    text = "📋 <b>Список активных лотерей:</b>\n\nВыберите интересующую вас лотерею:"
+    # --- CASE 2: CallbackQuery ---
+    try:
+        # если сообщение текстовое → редактируем текст
+        await message.edit_text(text, reply_markup=keyboard)
+    except TelegramBadRequest:
+        # если это photo/video/media → fallback
+        await message.answer(text, reply_markup=keyboard)
 
-    if isinstance(target, types.Message):
-        await target.answer(
-            text,
-            reply_markup=get_active_lotteries_keyboard(lotteries)
-        )
-    else:
-        await target.message.edit_text(
-            text,
-            reply_markup=get_active_lotteries_keyboard(lotteries)
-        )
-        await target.answer()
+    await target.answer()
 
 
 @router_start.callback_query(F.data.startswith("select_lottery_"))
