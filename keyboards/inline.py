@@ -1,6 +1,6 @@
 # keyboards/inline.py
 from aiogram.utils.keyboard import InlineKeyboardBuilder
-from aiogram.types import InlineKeyboardMarkup
+from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
 
 def get_ticket_quantity_keyboard(lottery_id: int, available_tickets: int) -> InlineKeyboardMarkup:
@@ -20,17 +20,21 @@ def get_ticket_quantity_keyboard(lottery_id: int, available_tickets: int) -> Inl
     if not valid_quantities and available_tickets > 0:
         valid_quantities = [available_tickets]
 
-    for qty in valid_quantities:
-        builder.button(
+    buttons = [
+        InlineKeyboardButton(
             text=f"🎫 {qty} шт.",
             callback_data=f"buy_ticket_{lottery_id}_{qty}"
         )
+        for qty in valid_quantities
+    ]
 
-    # Кнопка отмены
-    builder.button(text="❌ Отмена", callback_data="cancel_buy")
+    cancel_button = InlineKeyboardButton(
+        text="❌ Отмена",
+        callback_data="cancel_buy"
+    )
 
-    # Выравниваем кнопки: 3 в первом ряду, остальные (2) во втором
-    builder.adjust(3, 2)
+    builder.row(*buttons)
+    builder.row(cancel_button)
 
     return builder.as_markup()
 
@@ -124,6 +128,10 @@ def last_keyboard_buy(qty: int, lottery_id: int) -> InlineKeyboardMarkup:
     builder.button(
         text="Купить",
         callback_data=f"buy_tickets_{qty}_{lottery_id}"
+    )
+    builder.button(
+        text="❌ Отменить",
+        callback_data=f"lotteries"
     )
     return builder.as_markup()
 
