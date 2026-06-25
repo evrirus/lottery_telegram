@@ -131,3 +131,23 @@ def inline_exit_to_payment_method():
     builder = InlineKeyboardBuilder()
     builder.button(text="Закрыть", callback_data="replenish")
     return builder.as_markup()
+
+from aiogram.utils.keyboard import InlineKeyboardBuilder
+
+
+def lottery_preview_keyboard():
+    builder = InlineKeyboardBuilder()
+
+    builder.button(
+        text="📷 Добавить фотографию",
+        callback_data="lottery_add_photo"
+    )
+
+    builder.button(
+        text="🚀 Опубликовать",
+        callback_data="lottery_publish"
+    )
+
+    builder.adjust(1)
+
+    return builder.as_markup()

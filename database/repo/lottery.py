@@ -5,12 +5,13 @@ from database.models import Lottery
 class LotteryRepository:
 
     @staticmethod
-    async def create(prize, price, total, channel_id):
+    async def create(prize, price, total, channel_id, photo_file_id = None):
         return await Lottery.create(
             prize=prize,
             ticket_price=price,
             total_tickets=total,
-            channel_id=channel_id
+            channel_id=channel_id,
+            photo_file_id=photo_file_id
         )
 
     @staticmethod

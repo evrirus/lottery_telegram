@@ -6,8 +6,8 @@ from database.repo.lottery import LotteryRepository
 class LotteryService:
 
     @staticmethod
-    async def create(prize, price, total, channel_id):
-        return await LotteryRepository.create(prize, price, total, channel_id)
+    async def create(prize, price, total, channel_id, photo_file_id = None):
+        return await LotteryRepository.create(prize, price, total, channel_id, photo_file_id)
 
     @staticmethod
     async def get_actives():
