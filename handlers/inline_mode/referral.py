@@ -12,10 +12,10 @@ async def inline_query_handler(query: InlineQuery):
     results = [
         InlineQueryResultArticle(
             id=str(uuid.uuid4()),
-            title=f"Отправить: {text or 'Привет!'}",
-            description="Нажмите, чтобы отправить сообщение",
+            title=f"Выслать приглашение",
+            description="Нажмите, чтобы отправить реферальную ссылку",
             input_message_content=InputTextMessageContent(
-                message_text=text or "Привет!"
+                message_text=f'Приглашаю тебя в бот лотерея: <a href="tg://resolve?domain=gotgm_bot&start={query.from_user.id}">Переходи по ссылке</a>'
             )
         ),
         InlineQueryResultArticle(

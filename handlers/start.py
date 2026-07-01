@@ -31,7 +31,7 @@ client = LavaClient(config)
 
 @router_start.message(CommandStart())
 async def cmd_start(message: types.Message, command: CommandObject):
-    referrer_id = int(command.args)
+    referrer_id = int(command.args) if command.args.isdigit() else None
 
     await UserService.register(message.from_user.id, referrer_id=referrer_id)
     await message.answer(
