@@ -1,5 +1,6 @@
 # repositories/user_repo.py
 from decimal import Decimal
+from typing import Optional
 
 from database.models import User
 
@@ -7,10 +8,11 @@ from database.models import User
 class UserRepository:
 
     @staticmethod
-    async def create(telegram_id: int) -> User:
+    async def create(telegram_id: int, referrer_id: Optional[int] = None) -> User:
         return await User.create(
             telegram_id=telegram_id,
-            balance=Decimal("0.00")
+            balance=Decimal("0.00"),
+            referrer_id=referrer_id,
         )
 
     @staticmethod
