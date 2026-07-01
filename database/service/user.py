@@ -1,5 +1,7 @@
 # services/user_service.py
 from decimal import Decimal
+from typing import Optional
+
 from tortoise.transactions import in_transaction
 
 from database.repo.user import UserRepository
@@ -8,13 +10,13 @@ from database.repo.user import UserRepository
 class UserService:
 
     @staticmethod
-    async def register(telegram_id: int):
+    async def register(telegram_id: int, referrer_id: Optional[int] = None):
         user = await UserRepository.get_by_tg_id(telegram_id)
 
         if user:
             return user
 
-        return await UserRepository.create(telegram_id)
+        return await UserRepository.create(telegram_id, referrer_id=referrer_id)
 
     @staticmethod
     async def add_balance(telegram_id: int, amount: Decimal):
