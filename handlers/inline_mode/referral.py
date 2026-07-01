@@ -20,7 +20,7 @@ async def inline_query_handler(query: InlineQuery):
         ),
         InlineQueryResultArticle(
             id=str(uuid.uuid4()),
-            title=f"Отправить: {text + "Я лох" or 'Привет, как дела?'}",
+            title=f"Отправить: {text or 'Привет, как дела?'}",
             description="Нажмите, чтобы отправить сообщение",
             input_message_content=InputTextMessageContent(
                 message_text="ЗХАЩВЫХЗАВЫХЗ!"
