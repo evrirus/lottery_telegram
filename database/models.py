@@ -17,7 +17,7 @@ class User(models.Model):
     telegram_id = fields.BigIntField(unique=True, index=True)
     balance = fields.DecimalField(max_digits=12, decimal_places=2, default=0)
     register_at = fields.DatetimeField(auto_now_add=True)
-    referrer_id = fields.BigIntField(unique=False, index=False)
+    referrer_id = fields.BigIntField(unique=False, index=False, null=True)
 
     class Meta:
         table = "users"
