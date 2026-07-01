@@ -5,18 +5,16 @@ from decimal import Decimal
 import dotenv
 from aiogram import Router, types, F
 from aiogram.exceptions import TelegramBadRequest
-from aiogram.filters import CommandStart
+from aiogram.filters import CommandStart, CommandObject, Command
 from aiogram.types import LabeledPrice, InlineKeyboardButton, InlineKeyboardMarkup, CallbackQuery, InputMediaPhoto
 from async_cb_rate.parser import get_rate
 from lava_top_sdk import LavaClient, LavaClientConfig, LogLevel, Currency, PaymentMethod
 
 from database.service.lottery import LotteryService
-from database.service.ticket import TicketService
 from database.service.user import UserService
-from keyboards.inline import get_ticket_quantity_keyboard, get_active_lotteries_keyboard, get_payment_method_keyboard, \
-    start_keyboard, last_keyboard_buy, inline_exit_to_payment_method
+from keyboards.inline import get_ticket_quantity_keyboard, get_active_lotteries_keyboard, start_keyboard, \
+    last_keyboard_buy, inline_exit_to_payment_method
 from service.cryptobot import create_cryptobot_invoice
-from service.lottery_logic import check_and_announce_winner
 
 dotenv.load_dotenv()
 
@@ -32,8 +30,10 @@ config = LavaClientConfig(
 client = LavaClient(config)
 
 @router_start.message(CommandStart())
-async def cmd_start(message: types.Message):
-    await UserService.register(message.from_user.id)
+async def cmd_start(message: types.Message, command: CommandObject):
+    referrer_id = int(command.args)
+
+    await UserService.register(message.from_user.id, referrer_id=referrer_id)
     await message.answer(
         "Выберите действие",
         reply_markup=start_keyboard()
