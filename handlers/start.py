@@ -37,18 +37,27 @@ client = LavaClient(config)
 async def cmd_start(message: types.Message, command: CommandObject):
     payload = command.args
     referrer_id = int(payload) if payload.isdigit() else None
-    await UserService.register(message.from_user.id, referrer_id=referrer_id)
+    _, registered = await UserService.register(message.from_user.id, referrer_id=referrer_id)
+
+    text = "Выберите действие"
+    if registered:
+        text = "Мы рады вас приветствовать!\n\n" + text
 
     await message.answer(
-        f"Выберите действие, payload: {payload}",
+        text,
         reply_markup=start_keyboard()
     )
 
 @router_start.message(CommandStart())
 async def cmd_start(message: types.Message):
-    await UserService.register(message.from_user.id)
+    _, registered = await UserService.register(message.from_user.id)
+
+    text = "Выберите действие"
+    if registered:
+        text = "Мы рады вас приветствовать!\n\n" + text
+
     await message.answer(
-        "Выберите действие",
+        text,
         reply_markup=start_keyboard()
     )
 
