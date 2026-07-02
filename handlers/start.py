@@ -7,6 +7,7 @@ from aiogram import Router, types, F
 from aiogram.exceptions import TelegramBadRequest
 from aiogram.filters import CommandStart, CommandObject, Command
 from aiogram.types import LabeledPrice, InlineKeyboardButton, InlineKeyboardMarkup, CallbackQuery, InputMediaPhoto
+from aiogram.utils.payload import decode_payload
 from async_cb_rate.parser import get_rate
 from lava_top_sdk import LavaClient, LavaClientConfig, LogLevel, Currency, PaymentMethod
 
@@ -29,11 +30,24 @@ config = LavaClientConfig(
 
 client = LavaClient(config)
 
-@router_start.message(CommandStart())
+@router_start.message(CommandStart(
+    deep_link=True,
+    deep_link_encoded=True
+))
 async def cmd_start(message: types.Message, command: CommandObject):
     referrer_id = int(command.args) if command.args.isdigit() else None
+    args = command.args
+    payload = decode_payload(args)
 
     await UserService.register(message.from_user.id, referrer_id=referrer_id)
+    await message.answer(
+        f"Выберите действие, payload: {payload}",
+        reply_markup=start_keyboard()
+    )
+
+@router_start.message(CommandStart())
+async def cmd_start(message: types.Message):
+    await UserService.register(message.from_user.id)
     await message.answer(
         "Выберите действие",
         reply_markup=start_keyboard()
