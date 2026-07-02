@@ -35,11 +35,9 @@ client = LavaClient(config)
     deep_link_encoded=True
 ))
 async def cmd_start(message: types.Message, command: CommandObject):
-    referrer_id = int(command.args) if command.args.isdigit() else None
-    args = command.args
-    payload = decode_payload(args)
+    payload = command.args
 
-    await UserService.register(message.from_user.id, referrer_id=referrer_id)
+    # await UserService.register(message.from_user.id, referrer_id=referrer_id)
     await message.answer(
         f"Выберите действие, payload: {payload}",
         reply_markup=start_keyboard()
