@@ -4,17 +4,18 @@ from typing import Optional
 
 from tortoise.transactions import in_transaction
 
+from database.models import User
 from database.repo.user import UserRepository
 
 
 class UserService:
 
     @staticmethod
-    async def register(telegram_id: int, referrer_id: Optional[int] = None):
+    async def register(telegram_id: int, referrer_id: Optional[int] = None) -> tuple[User, bool]:
 
         user = await UserRepository.get_by_tg_id(telegram_id)
         if user:
-            return user
+            return user, False
 
         valid_referrer_id = None
 
@@ -27,7 +28,7 @@ class UserService:
         return await UserRepository.create(
             telegram_id,
             referrer_id=valid_referrer_id
-        )
+        ), True
 
     @staticmethod
     async def add_balance(telegram_id: int, amount: Decimal):
