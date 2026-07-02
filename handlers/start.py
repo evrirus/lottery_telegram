@@ -36,8 +36,9 @@ client = LavaClient(config)
 ))
 async def cmd_start(message: types.Message, command: CommandObject):
     payload = command.args
+    referrer_id = int(payload) if payload.isdigit() else None
+    await UserService.register(message.from_user.id, referrer_id=referrer_id)
 
-    # await UserService.register(message.from_user.id, referrer_id=referrer_id)
     await message.answer(
         f"Выберите действие, payload: {payload}",
         reply_markup=start_keyboard()
@@ -116,22 +117,32 @@ async def process_select_lottery(callback: types.CallbackQuery):
         await callback.answer("🎉 Все билеты в этой лотерее распроданы!", show_alert=True)
         return
 
-    await callback.message.edit_media(
-        media=InputMediaPhoto(
-            media=lottery.photo_file_id,
-            caption=(
-                f"🎁 <b>Лотерея #{lottery.id}</b>\n\n"
-                f"🏆 Приз: {lottery.prize}\n"
-                f"💰 Цена билета: {lottery.ticket_price} ⭐️\n"
-                f"📊 Продано: {lottery.sold_tickets} из {lottery.total_tickets}\n\n"
-                f"Выберите количество билетов:"
-            ),
-        ),
-        reply_markup=get_ticket_quantity_keyboard(
-            lottery.id,
-            available_tickets
-        )
+    text = (
+        f"🎁 <b>Лотерея #{lottery.id}</b>\n\n"
+        f"🏆 Приз: {lottery.prize}\n"
+        f"💰 Цена билета: {lottery.ticket_price} ⭐️\n"
+        f"📊 Продано: {lottery.sold_tickets} из {lottery.total_tickets}\n\n"
+        f"Выберите количество билетов:"
     )
+
+    markup = get_ticket_quantity_keyboard(
+        lottery.id,
+        available_tickets
+    )
+
+    if lottery.photo_file_id:
+        await callback.message.edit_media(
+            media=InputMediaPhoto(
+                media=lottery.photo_file_id,
+                caption=text,
+            ),
+            reply_markup=markup
+        )
+    else:
+        await callback.message.edit_text(
+            text=text,
+            reply_markup=markup
+        )
     await callback.answer()
 
 
