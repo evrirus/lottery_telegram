@@ -9,7 +9,7 @@ router = Router()
 @router.inline_query()
 async def inline_query_handler(query: InlineQuery):
     text = query.query.strip()
-    link = await create_start_link(query.bot, f'{query.from_user.id}')
+    link = await create_start_link(query.bot, f'{query.from_user.id}', encode=True)
     results = [
         InlineQueryResultArticle(
             id=str(uuid.uuid4()),
