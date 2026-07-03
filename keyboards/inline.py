@@ -88,7 +88,7 @@ def get_payment_method_keyboard(user_id: int, amount: int) -> InlineKeyboardMark
     builder.button(text="❌ Отмена", callback_data="start")
 
     # Выстраиваем по 1 кнопке в ряд для удобства нажатия
-    builder.adjust(1)
+    builder.adjust(2, 1, repeat=True)
 
     return builder.as_markup()
 
