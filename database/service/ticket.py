@@ -27,7 +27,7 @@ class TicketService:
 
             # ✔ атомарный withdraw (без сервиса)
             updated = await User.filter(
-                id=user_id,
+                telegram_id=user_id,
                 balance__gte=total_price
             ).update(
                 balance=F("balance") - total_price
