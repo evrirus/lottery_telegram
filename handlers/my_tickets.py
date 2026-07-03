@@ -85,7 +85,7 @@ async def check_lottery_by_id_handler(callback: types.CallbackQuery):
     lottery_id = int(parts[1]) if parts[1] and parts[1].isdigit() else None
     print(parts, lottery_id)
 
-    lottery = await LotteryService.get_lottery(lottery_id=lottery_id)
+    lottery = await LotteryService.get_lottery(lottery_id=lottery_id, status=LotteryStatus.COMPLETED)
     text = (
         f"🎁 <b>Лотерея #{lottery.id}</b>\n\n"
         f"🏆 Приз: {lottery.prize}\n"

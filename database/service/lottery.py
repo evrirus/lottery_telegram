@@ -1,5 +1,6 @@
 from tortoise.transactions import in_transaction
 
+from database.models import LotteryStatus
 from database.repo.lottery import LotteryRepository
 
 
@@ -14,9 +15,14 @@ class LotteryService:
         return await LotteryRepository.get_actives()
 
     @staticmethod
-    async def get_lottery(lottery_id: int):
-        lottery = await LotteryRepository.get_by_id(lottery_id)
-        return lottery if lottery and lottery.status == "active" else None
+    async def get_lottery(lottery_id: int, status: LotteryStatus = LotteryStatus.ACTIVE):
+        query = await LotteryRepository.get_by_id(lottery_id)
+
+        if status is not None:
+            query = query.filter(status=status)
+
+        return await query.first()
+
 
     @staticmethod
     async def check_ticket_availability(lottery_id: int, quantity: int) -> bool:
