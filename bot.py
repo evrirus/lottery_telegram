@@ -14,6 +14,7 @@ from handlers.admin.refund import router as refund_router
 from handlers.start import router_start
 from handlers.replenish import router as replenish_router
 from handlers.inline_mode.referral import router as referral_router
+from handlers.my_tickets import router as my_tickets_router
 
 
 async def main(config):
@@ -33,7 +34,8 @@ async def main(config):
         create_lottery_router,
         refund_router,
         replenish_router,
-        referral_router
+        referral_router,
+        my_tickets_router
     )
 
     await init_tortoise()
