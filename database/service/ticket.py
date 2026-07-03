@@ -1,6 +1,7 @@
 from typing import Tuple, Optional
 
-from tortoise.transactions import in_transaction, F
+from tortoise.transactions import in_transaction
+from tortoise.expressions import F
 
 from database.models import Ticket, Lottery, User, LotteryStatus
 from database.repo.ticket import TicketRepository

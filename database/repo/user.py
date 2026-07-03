@@ -2,7 +2,7 @@
 from decimal import Decimal
 from typing import Optional
 
-from tortoise.transactions import F
+from tortoise.expressions import F
 
 from database.models import User
 
