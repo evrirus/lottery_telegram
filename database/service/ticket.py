@@ -23,7 +23,6 @@ class TicketService:
                 return False, "Недостаточно билетов"
 
             total_price = lottery.ticket_price * quantity
-            total_price = Decimal(str(total_price))
 
             # ✔ атомарный withdraw (без сервиса)
             updated = await User.filter(
