@@ -169,11 +169,13 @@ def lottery_preview_keyboard():
 
     return builder.as_markup()
 
-def my_tickets_keyboard(tickets: list[Ticket]) -> InlineKeyboardMarkup:
+def my_tickets_keyboard(tickets: list[Ticket], user_id: int) -> InlineKeyboardMarkup:
     builder = InlineKeyboardBuilder()
     for ticket in tickets:
+        sticker = "👑" if user_id == ticket.lottery.winner_user_id else ""
+
         builder.button(
-            text=f"{ticket.lottery.prize} ({ticket.quantity} шт.)",
+            text=f"{sticker} {ticket.lottery.prize} ({ticket.quantity} шт.)",
             callback_data=f"lottery_{ticket.lottery.id}"
         )
 
