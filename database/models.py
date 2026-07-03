@@ -15,8 +15,7 @@ async def init_tortoise():
 
 class LotteryStatus(str, Enum):
     ACTIVE = "active"
-    FINISHED = "finished"
-    CANCELLED = "cancelled"
+    COMPLETED = "completed"
 
 class User(models.Model):
     id = fields.IntField(pk=True)
@@ -48,6 +47,7 @@ class Lottery(models.Model):
         LotteryStatus,
         default=LotteryStatus.ACTIVE
     )
+    # status = fields.CharField(max_length=20)
     winner_user_id = fields.BigIntField(null=True)
 
     class Meta:
