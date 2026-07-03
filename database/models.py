@@ -44,7 +44,7 @@ class Lottery(models.Model):
     channel_id = fields.BigIntField()
     photo_file_id = fields.CharField(max_length=300, null=True) #todo исправить длину
 
-    fields.CharEnumField(
+    status = fields.CharEnumField(
         LotteryStatus,
         default=LotteryStatus.ACTIVE
     )
