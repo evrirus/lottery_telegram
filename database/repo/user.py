@@ -2,6 +2,8 @@
 from decimal import Decimal
 from typing import Optional
 
+from tortoise.transactions import F
+
 from database.models import User
 
 
@@ -26,3 +28,14 @@ class UserRepository:
     @staticmethod
     async def save(user: User):
         await user.save()
+
+    @staticmethod
+    async def withdraw(user_id: int, amount: Decimal) -> bool:
+        updated = await User.filter(
+            id=user_id,
+            balance__gte=amount
+        ).update(
+            balance=F("balance") - amount
+        )
+
+        return updated == 1

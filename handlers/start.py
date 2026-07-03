@@ -129,7 +129,7 @@ async def process_select_lottery(callback: types.CallbackQuery):
     text = (
         f"🎁 <b>Лотерея #{lottery.id}</b>\n\n"
         f"🏆 Приз: {lottery.prize}\n"
-        f"💰 Цена билета: {lottery.ticket_price} ⭐️\n"
+        f"💰 Цена билета: {lottery.ticket_price_display} ⭐️\n"
         f"📊 Продано: {lottery.sold_tickets} из {lottery.total_tickets}\n\n"
         f"Выберите количество билетов:"
     )

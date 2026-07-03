@@ -2,6 +2,8 @@
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
+from database.models import Ticket
+
 
 def get_ticket_quantity_keyboard(lottery_id: int, available_tickets: int) -> InlineKeyboardMarkup:
     """
@@ -100,7 +102,16 @@ def start_keyboard() -> InlineKeyboardMarkup:
         text="💰 Пополнить",
         callback_data="replenish"
     )
-    builder.adjust(1, repeat=True)
+    builder.button(
+        text="🤸 Активные билеты",
+        callback_data="my_tickets"
+    )
+    builder.button(
+        text="⛲ История",
+        callback_data="my_history"
+    )
+
+    builder.adjust(2, repeat=True)
     return builder.as_markup()
 
 
@@ -140,8 +151,6 @@ def inline_exit_to_payment_method():
     builder.button(text="Закрыть", callback_data="replenish")
     return builder.as_markup()
 
-from aiogram.utils.keyboard import InlineKeyboardBuilder
-
 
 def lottery_preview_keyboard():
     builder = InlineKeyboardBuilder()
@@ -159,3 +168,19 @@ def lottery_preview_keyboard():
     builder.adjust(1)
 
     return builder.as_markup()
+
+def my_tickets_keyboard(tickets: list[Ticket]) -> InlineKeyboardMarkup:
+    builder = InlineKeyboardBuilder()
+    for ticket in tickets:
+        builder.button(
+            text=f"{ticket.lottery.prize} ({ticket.quantity} шт.)",
+            callback_data=f"lottery_{ticket.lottery.id}"
+        )
+
+    builder.adjust(3)
+    return builder.as_markup()
+
+def cancel_button(callback_data: str = "start") -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text="❌ Закрыть", callback_data=callback_data)]
+    ])

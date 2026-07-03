@@ -1,3 +1,5 @@
+from enum import Enum
+
 from tortoise import Tortoise
 from tortoise import models, fields
 
@@ -11,6 +13,10 @@ async def init_tortoise():
     await Tortoise.init(config=TORTOISE_ORM)
     await Tortoise.generate_schemas()
 
+class LotteryStatus(str, Enum):
+    ACTIVE = "active"
+    FINISHED = "finished"
+    CANCELLED = "cancelled"
 
 class User(models.Model):
     id = fields.IntField(pk=True)
@@ -38,11 +44,18 @@ class Lottery(models.Model):
     channel_id = fields.BigIntField()
     photo_file_id = fields.CharField(max_length=300, null=True) #todo исправить длину
 
-    status = fields.CharField(max_length=20, default="active")
+    fields.CharEnumField(
+        LotteryStatus,
+        default=LotteryStatus.ACTIVE
+    )
     winner_user_id = fields.BigIntField(null=True)
 
     class Meta:
         table = "lotteries"
+
+    @property
+    def ticket_price_display(self) -> str:
+        return f"{self.ticket_price:,}".replace(",", " ") + " ₽"
 
 
 class Ticket(models.Model):
@@ -50,9 +63,10 @@ class Ticket(models.Model):
 
     lottery = fields.ForeignKeyField("models.Lottery", related_name="tickets", on_delete=fields.CASCADE)
     user = fields.ForeignKeyField("models.User", related_name="tickets", on_delete=fields.CASCADE)
+    quantity = fields.IntField(default=0)
 
     created_at = fields.DatetimeField(auto_now_add=True)
 
     class Meta:
         table = "tickets"
-
+        unique_together = ("lottery", "user")

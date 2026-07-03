@@ -40,16 +40,8 @@ class UserService:
             return user.balance
 
     @staticmethod
-    async def withdraw(telegram_id: int, amount: Decimal) -> bool:
-        async with in_transaction():
-            user = await UserRepository.get_for_update(telegram_id)
-
-            if user.balance < amount:
-                return False
-
-            user.balance -= amount
-            await UserRepository.save(user)
-            return True
+    async def withdraw(user_id: int, amount: Decimal) -> bool:
+        return await UserRepository.withdraw(user_id, amount)
 
     @staticmethod
     async def get_user(telegram_id: int):
