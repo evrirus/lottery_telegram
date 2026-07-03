@@ -93,12 +93,12 @@ async def check_lottery_by_id_handler(callback: types.CallbackQuery):
         f"📊 Продано: {lottery.sold_tickets} из {lottery.total_tickets}\n\n"
     )
     if lottery.status == LotteryStatus.COMPLETED and lottery.winner_user_id == callback.from_user.id:
-        text += f"👑 <b>Победитель: <a href=\"{callback.from_user.url}\">ВЫ</b> 🥳🥳🥳"
+        text += f"👑 <b>Победитель: <a href=\"{callback.from_user.url}\">ВЫ</a></b> 🥳🥳🥳"
 
     elif lottery.status == LotteryStatus.COMPLETED:
         winner = await callback.bot.get_chat(callback.from_user.id)
         url = f'<a href="tg://user?id={winner.id}">{winner.full_name}</a>'
-        text += f"<b>Победитель: <a href=\"{url}\">ВЫ</b>"
+        text += f"<b>Победитель: {url}</b>"
 
     else:
         bot_url = (await callback.bot.get_me()).url
