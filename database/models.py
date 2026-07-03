@@ -44,11 +44,10 @@ class Lottery(models.Model):
     channel_id = fields.BigIntField()
     photo_file_id = fields.CharField(max_length=300, null=True) #todo исправить длину
 
-    # status = fields.CharEnumField(
-    #     LotteryStatus,
-    #     default=LotteryStatus.ACTIVE
-    # )
-    status = fields.CharField(max_length=20)
+    status = fields.CharEnumField(
+        LotteryStatus,
+        default=LotteryStatus.ACTIVE
+    )
     winner_user_id = fields.BigIntField(null=True)
 
     class Meta:
