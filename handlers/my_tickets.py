@@ -83,6 +83,7 @@ async def my_history_handler(message: types.Message):
 async def check_lottery_by_id_handler(callback: types.CallbackQuery):
     parts = callback.data.split("_")
     lottery_id = int(parts[1]) if parts[1] and parts[1].isdigit() else None
+    print(parts, lottery_id)
 
     lottery = await LotteryService.get_lottery(lottery_id=lottery_id)
     text = (

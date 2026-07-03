@@ -2,7 +2,7 @@
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
-from database.models import Ticket
+from database.models import Ticket, Lottery
 
 
 def get_ticket_quantity_keyboard(lottery_id: int, available_tickets: int) -> InlineKeyboardMarkup:
@@ -41,7 +41,7 @@ def get_ticket_quantity_keyboard(lottery_id: int, available_tickets: int) -> Inl
     return builder.as_markup()
 
 
-def get_active_lotteries_keyboard(lotteries: list) -> InlineKeyboardMarkup:
+def get_active_lotteries_keyboard(lotteries: list[Lottery]) -> InlineKeyboardMarkup:
     """Генерирует клавиатуру со списком доступных лотерей"""
     builder = InlineKeyboardBuilder()
 
