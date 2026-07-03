@@ -6,6 +6,7 @@ from tortoise.expressions import F
 
 from database.models import Ticket, Lottery, User, LotteryStatus
 from database.repo.ticket import TicketRepository
+from database.service.user import UserService
 
 
 class TicketService:
@@ -47,11 +48,11 @@ class TicketService:
             ).update(
                 quantity=F("quantity") + quantity
             )
-
+            user = await UserService.get_user(user_id)
             if not updated:
-                await Ticket.create(
-                    lottery_id=lottery_id,
-                    user_id=user_id,
+                await TicketRepository.create(
+                    lottery=lottery,
+                    user=user,
                     quantity=quantity
                 )
 

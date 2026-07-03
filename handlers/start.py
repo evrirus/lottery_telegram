@@ -176,8 +176,8 @@ async def process_buy_quantity(callback: types.CallbackQuery):
         f"🎁 <b>Лотерея #{lottery.id}</b>\n\n"
         f"🏆 Приз: {lottery.prize}\n"
         f"🎫 Выбрано билетов: {quantity} шт.\n"
-        f"💰 Цена за 1 билет: {lottery.ticket_price}₽\n"
-        f"💵 <b>Итого к оплате: {total_price}₽</b>\n\n",
+        f"💰 Цена за 1 билет: {lottery.ticket_price}₽\n\n"
+        f"💵 <b>Итого к оплате: {total_price}₽</b>",
         reply_markup=last_keyboard_buy(quantity, lottery.id)
     )
     await callback.answer()
