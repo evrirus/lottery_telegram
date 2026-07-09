@@ -10,3 +10,4 @@ cp = CryptoPay(
     webhook_manager=FlaskManager(app, "/cryptobot-webhook"),
     network=TESTNET
 )
+print(app.url_map)
