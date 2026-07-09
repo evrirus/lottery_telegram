@@ -15,6 +15,10 @@ async def process_successful_payment(bot: Bot, payment_id: str):
     """
     try:
         transaction = await TransactionService.get_transaction(payment_id)
+        if not transaction:
+            logger.error(f"Critical error in process_successful_payment: {payment_id}", exc_info=True)
+            return False
+
         await TransactionService.complete_transaction(payment_id)
         await UserService.add_balance(
             transaction.user.telegram_id,

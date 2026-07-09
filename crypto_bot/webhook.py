@@ -18,10 +18,10 @@ logger = logging.getLogger(__name__)
 
 
 @cp.invoice_paid()
-async def handle_payment(invoice: Invoice, ):
-
+async def handle_payment(invoice: Invoice):
     try:
         payment_id = invoice.payload
+        print(payment_id)
         if not payment_id:
             return
 
