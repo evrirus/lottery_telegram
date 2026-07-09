@@ -1,4 +1,4 @@
-from datetime import datetime, UTC
+from datetime import datetime, timezone
 from decimal import Decimal
 
 from database.models import PaymentProvider, Transaction, PaymentStatus, User
@@ -37,7 +37,7 @@ class TransactionService:
             return None
 
         transaction.status = PaymentStatus.COMPLETED
-        transaction.completed_at = datetime.now(UTC)
+        transaction.completed_at = datetime.now(timezone.utc)
 
         await transaction.save()
 
