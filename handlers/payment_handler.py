@@ -2,31 +2,30 @@
 import logging
 
 from aiogram import Bot
-from tortoise.transactions import in_transaction
 
+from database.service.transaction import TransactionService
 from database.service.user import UserService
 
 logger = logging.getLogger(__name__)
 
 
-async def process_successful_payment(bot: Bot, metadata: dict):
+async def process_successful_payment(bot: Bot, payment_id: str):
     """
     Обрабатывает успешную оплату, пришедшую через CryptoBot Webhook.
     """
     try:
-        user_id = metadata["user_id"]
-        quantity = metadata["quantity"]
-
-        logger.info(f"Processing payment for user {user_id}, qty {quantity}")
-
-        async with in_transaction():
-            await UserService.add_balance(user_id, quantity)
+        transaction = await TransactionService.get_transaction(payment_id)
+        await TransactionService.complete_transaction(payment_id)
+        await UserService.add_balance(
+            transaction.user.telegram_id,
+            transaction.amount
+        )
 
         # 1. Уведомляем пользователя
         await bot.send_message(
-            chat_id=user_id,
+            chat_id=transaction.user.telegram_id,
             text=f"✅ Оплата через CryptoBot прошла успешно!\n"
-                 f"Ваш баланс пополнен на {quantity}р. Удачи в розыгрышах! 🍀"
+                 f"Ваш баланс пополнен на {transaction.amount}р. Удачи в розыгрышах! 🍀"
         )
 
     except Exception as e:

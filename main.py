@@ -1,18 +1,13 @@
-import threading
 import asyncio
+import threading
 
+from bot import main as bot_main
 from config import init_config, get_config
 from crypto_bot.webhook import app as flask_app
-from bot import main as bot_main
 
 
 def run_flask():
     flask_app.run(host="0.0.0.0", port=5000)
-
-
-def run_bot():
-    config = get_config()
-    asyncio.run(bot_main(config))
 
 
 if __name__ == "__main__":

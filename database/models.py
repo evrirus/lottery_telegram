@@ -70,3 +70,35 @@ class Ticket(models.Model):
     class Meta:
         table = "tickets"
         unique_together = ("lottery", "user")
+
+
+class PaymentProvider(str, Enum):
+    LAVA_SBP = "lava-sbp"  # СБП/Карта
+    CRYPTOBOT = "cryptobot"  # Крипто
+    TELEGRAM_STARS = "telegram_stars"  # Звёзды ТГ
+
+class PaymentStatus(str, Enum):
+    PENDING = "pending"
+    COMPLETED = "completed"
+    FAILED = "failed"
+    CANCELLED = "cancelled"
+
+class Transaction(models.Model):
+    id = fields.IntField(pk=True)
+    external_payment_id = fields.CharField(max_length=255, null=True, index=True)
+
+    user = fields.ForeignKeyField("models.User", related_name="transactions", on_delete=fields.CASCADE)
+    email = fields.CharField(max_length=255, null=True)
+
+    amount = fields.DecimalField(max_digits=15, decimal_places=2)
+
+    provider = fields.CharEnumField(PaymentProvider)
+    status = fields.CharEnumField(PaymentStatus, default=PaymentStatus.PENDING)
+
+    created_at = fields.DatetimeField(auto_now_add=True)
+    updated_at = fields.DatetimeField(auto_now=True)
+    completed_at = fields.DatetimeField(null=True)
+
+    metadata = fields.JSONField(default=dict)
+
+

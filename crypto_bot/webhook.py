@@ -2,71 +2,46 @@
 import asyncio
 import logging
 
+from aiogram.types import Message
+from aiosend import CryptoPay
+from aiosend.types import Invoice
+from aiosend.webhook import FlaskManager
 from flask import Flask, request
 
 from config import init_config, get_config
-from crypto_bot.verify import verify_crypto_pay_signature
 from database.service.user import UserService
 from handlers.payment_handler import process_successful_payment
 from utils import shared_state
 
 logger = logging.getLogger(__name__)
 app = Flask(__name__)
+cp = CryptoPay(
+    "TOKEN",
+    webhook_manager=FlaskManager(app, "/cryptobot-webhook"),
+)
 
-
-@app.route("/cryptobot-webhook", methods=["POST"])
-def webhook_cryptobot():
+@cp.invoice_paid()
+async def handle_payment(invoice: Invoice, message: Message):
+    print(type(invoice), type(message))
+    await message.answer(
+        f"invoice #{invoice.invoice_id} paid"
+    )
     try:
-        config = get_config()
-        verify = verify_crypto_pay_signature(config.CRYPTOBOT_TOKEN, request=request)
-        if not verify:
-            return "invalid signature", 403
+        payment_id = invoice.payload
+        if not payment_id:
+            return
 
-        data = request.get_json(silent=True)
-
-        if not data:
-            return "OK", 200
-
-        if not shared_state.READY:
-            logger.error("System not ready yet")
-            return "OK", 200
-
-        bot = shared_state.BOT
         loop = shared_state.EVENT_LOOP
-
-        if bot is None or loop is None:
-            logger.error("Bot/loop missing")
-            return "OK", 200
-
-        if not loop.is_running():
-            logger.error("Loop not running")
-            return "OK", 200
-
-        payload = data.get("payload", {}).get("payload")
-        if not payload:
-            return "OK", 200
-
-        parts = payload.split("_")
-        print(parts)
-        if len(parts) != 3:
-            return "OK", 200
-
-        metadata = {
-            "user_id": int(parts[1]),
-            "quantity": int(parts[2])
-        }
+        if not shared_state.READY:
+            return
 
         asyncio.run_coroutine_threadsafe(
-            process_successful_payment(bot, metadata),
+            process_successful_payment(message.bot, payment_id),
             loop
         )
 
-        return "OK", 200
-
     except Exception as e:
         logger.error(e, exc_info=True)
-        return "OK", 200
-
 
 
 @app.route("/lavatop-webhook", methods=["POST"])
@@ -106,11 +81,13 @@ def webhook_lavatop():
             f"product={product.get('id')}, "
             f"telegram_id={telegram_id}"
         )
+        bot = shared_state.BOT
+        loop = shared_state.EVENT_LOOP
+        asyncio.run_coroutine_threadsafe(
+            process_successful_payment(bot, contract_id),
+            loop
+        )
 
-        # ⚠️ здесь твоя бизнес-логика
-        # например:
-        # user_id = find_user_by_email(buyer["email"])
-        # add_balance(user_id, Decimal(str(amount)))
         UserService.add_balance(telegram_id=telegram_id,
                                 amount=amount)
 
