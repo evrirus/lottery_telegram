@@ -291,12 +291,12 @@ async def on_successful_payment(message: types.Message):
 @router_start.callback_query(F.data.startswith("pay_sbp_"))
 async def process_pay_stars(callback: types.CallbackQuery):
     parts = callback.data.split("_")
-    # print(parts)
+    print(parts)
     # user_id = int(parts[3])
-    quantity = int(parts[4])
+    quantity = int(parts[3])
     await callback.answer(f"⏳ Генерируем ссылку на оплату... {quantity} Рубчиков")
 
-    print(parts)
+    # print(parts)
     config = get_config()
 
     payload = {
