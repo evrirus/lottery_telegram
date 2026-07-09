@@ -70,7 +70,7 @@ def get_payment_method_keyboard(user_id: int, amount: int) -> InlineKeyboardMark
     Генерирует клавиатуру с выбором способа оплаты.
     """
     builder = InlineKeyboardBuilder()
-    payload = f"lottery_{user_id}_{amount}"
+    payload = f"{user_id}_{amount}"
 
     builder.button(
         text="⭐️ Telegram",
@@ -81,10 +81,9 @@ def get_payment_method_keyboard(user_id: int, amount: int) -> InlineKeyboardMark
         callback_data=f"pay_cryptobot_{payload}"
     )
     builder.button(
-        text="🌋 LavaTop",
-        callback_data=f"pay_lavatop_{payload}"
+        text="📱 СБП",
+        callback_data=f"pay_sbp_{payload}"
     )
-
     builder.button(text="❌ Отмена", callback_data="start")
 
     # Выстраиваем по 1 кнопке в ряд для удобства нажатия

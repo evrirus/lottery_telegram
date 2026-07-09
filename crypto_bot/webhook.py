@@ -6,6 +6,7 @@ from flask import Flask, request
 
 from config import init_config, get_config
 from crypto_bot.verify import verify_crypto_pay_signature
+from database.service.user import UserService
 from handlers.payment_handler import process_successful_payment
 from utils import shared_state
 
@@ -96,18 +97,22 @@ def webhook_lavatop():
         contract_id = data.get("contractId")
         amount = data.get("amount")
         currency = data.get("currency")
+        telegram_id = data.get("clientUtm", {}).get("telegram_id")
 
         logger.info(
             f"Payment success: contract={contract_id}, "
             f"amount={amount} {currency}, "
             f"user={buyer.get('email')}, "
-            f"product={product.get('id')}"
+            f"product={product.get('id')}, "
+            f"telegram_id={telegram_id}"
         )
 
         # ⚠️ здесь твоя бизнес-логика
         # например:
         # user_id = find_user_by_email(buyer["email"])
         # add_balance(user_id, Decimal(str(amount)))
+        UserService.add_balance(telegram_id=telegram_id,
+                                amount=amount)
 
         return "OK", 200
 

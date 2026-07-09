@@ -1,16 +1,15 @@
 import logging
-import os
 from decimal import Decimal
 
+import aiohttp
 import dotenv
 from aiogram import Router, types, F
 from aiogram.exceptions import TelegramBadRequest
-from aiogram.filters import CommandStart, CommandObject, Command
+from aiogram.filters import CommandStart, CommandObject
 from aiogram.types import LabeledPrice, InlineKeyboardButton, InlineKeyboardMarkup, CallbackQuery, InputMediaPhoto
-from aiogram.utils.payload import decode_payload
 from async_cb_rate.parser import get_rate
-from lava_top_sdk import LavaClient, LavaClientConfig, LogLevel, Currency, PaymentMethod
 
+from config import get_config
 from database.service.lottery import LotteryService
 from database.service.user import UserService
 from keyboards.inline import get_ticket_quantity_keyboard, get_active_lotteries_keyboard, start_keyboard, \
@@ -21,14 +20,7 @@ dotenv.load_dotenv()
 
 logger = logging.getLogger()
 router_start = Router()
-config = LavaClientConfig(
-    api_key=os.getenv("LAVATOP_TOKEN"),
-    env='production',  # or 'production' or 'sandbox'
-    webhook_secret_key='your-webhook-secret',
-    logging_level=LogLevel.DEBUG
-)
 
-client = LavaClient(config)
 
 @router_start.message(CommandStart(
     deep_link=True,
@@ -36,7 +28,7 @@ client = LavaClient(config)
 ))
 async def cmd_start(message: types.Message, command: CommandObject):
     payload = command.args
-    referrer_id = int(payload) if payload.isdigit() else None
+    referrer_id = int(payload) if payload and payload.isdigit() else None
     _, registered = await UserService.register(message.from_user.id, referrer_id=referrer_id)
 
     text = "Выберите действие"
@@ -183,7 +175,7 @@ async def process_buy_quantity(callback: types.CallbackQuery):
     await callback.answer()
 
 
-@router_start.callback_query(F.data.startswith("pay_stars_lottery_"))
+@router_start.callback_query(F.data.startswith("pay_stars_"))
 async def process_pay_stars(callback: types.CallbackQuery):
     # payload: pay_stars_lottery_{user_id}_{quantity}
     parts = callback.data.split("_")
@@ -204,7 +196,7 @@ async def process_pay_stars(callback: types.CallbackQuery):
     )
 
 
-@router_start.callback_query(F.data.startswith("pay_cryptobot_lottery_"))
+@router_start.callback_query(F.data.startswith("pay_cryptobot_"))
 async def process_pay_cryptobot(callback: types.CallbackQuery):
     await callback.answer("⏳ Генерируем ссылку на оплату...", show_alert=False)
 
@@ -218,7 +210,7 @@ async def process_pay_cryptobot(callback: types.CallbackQuery):
 
     # Запрашиваем ссылку у CryptoBot
     payment_link = await create_cryptobot_invoice(
-        lottery_prize=f"Пополнение баланса на {total_price_rubles}",
+        lottery_prize=f"Баланс будет пополнен на {total_price_rubles}₽",
         total_price=total_price,
         payload=invoice_payload,
         rate=usd_rate.price
@@ -296,39 +288,53 @@ async def on_successful_payment(message: types.Message):
         await message.answer(f"⭐ Оплата прошла успешно! Ваш баланс пополнен на {quantity}р. Удачи в розыгрышах! 🍀")
 
 
-@router_start.callback_query(F.data.startswith("pay_lavatop_lottery_"))
+@router_start.callback_query(F.data.startswith("pay_sbp_"))
 async def process_pay_stars(callback: types.CallbackQuery):
     parts = callback.data.split("_")
-    print(parts)
-    user_id = int(parts[3])
+    # print(parts)
+    # user_id = int(parts[3])
     quantity = int(parts[4])
-    await callback.answer(f"⏳ Генерируем ссылку на оплату... {quantity} Рубчиков", show_alert=False)
+    await callback.answer(f"⏳ Генерируем ссылку на оплату... {quantity} Рубчиков")
+
+    print(parts)
+    config = get_config()
+
+    payload = {
+        "email": "orion4605@gmail.com",
+        "offerId": config.LAVATOP_OFFER_ID,
+        "currency": "RUB",
+        "clientUtm": {
+            "telegram_id": callback.from_user.id
+        },
+        "amount": quantity,
+        "paymentMethod": "SBP",
+        "paymentProvider": "PAY2ME"
+    }
 
 
+    headers = {
+        "X-Api-Key": config.LAVATOP_TOKEN,
+        "Accept": "application/json"
+    }
 
-    # lottery = await LotteryService.get_lottery(lottery_id)
-    # if not lottery:
-    #     await callback.answer("Лотерея не найдена", show_alert=True)
-    #     return
+    async with aiohttp.ClientSession() as session:
+        async with session.post(
+                "https://gate.lava.top/api/v3/invoice",
+                json=payload,
+                headers=headers
+        ) as response:
+            text = await response.text()
 
-    # total_price = lottery['ticket_price'] * quantity
-    # invoice_payload = f"lottery_{user_id}_{lottery_id}_{quantity}"
-    # LINK = "https://gate.lava.top/api/v3/invoice"
-    # r = requests.post(LINK, data={
-    #     "email": "client@gmail.com",
-    #     "offerId": "836b9fc5-7ae9-4a27-9642-592bc44072b7",
-    #     "currency": "RUB"
-    # })
-    # r.raise_for_status()
+            if response.status not in (200, 201):
+                raise Exception(text)
+
+            invoice = await response.json(content_type=None)
+
+    payment_url = invoice.get("paymentUrl")
+    payment_id = invoice.get("id")
 
 
-    payment = client.create_one_time_payment(
-        email="orion4605@gmail.com",
-        offer_id="836b9fc5-7ae9-4a27-9642-592bc44072b7",
-        currency=Currency.RUB,
-        payment_method=PaymentMethod.BANK131,
-    )
-    await callback.message.answer(f"{payment.id=}\n{payment.paymentUrl=}")
+    await callback.message.answer(f"{payment_id=}\n{payment_url=}")
 
 # 6. Кнопка "Назад к списку" (опционально, можно добавить в клавиатуру количества билетов)
 @router_start.callback_query(F.data == "cancel_buy")
