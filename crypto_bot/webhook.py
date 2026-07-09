@@ -1,27 +1,21 @@
 # webhook.py (ваш файл с Flask)
 import asyncio
 import logging
-import os
 
 import dotenv
 from aiogram.types import Message
-from aiosend import CryptoPay
 from aiosend.types import Invoice
-from aiosend.webhook import FlaskManager
-from flask import Flask, request
+from flask import request
 
 from config import init_config, get_config
+from crypto_bot.client import cp, app
 from database.service.user import UserService
 from handlers.payment_handler import process_successful_payment
 from utils import shared_state
 
 dotenv.load_dotenv()
 logger = logging.getLogger(__name__)
-app = Flask(__name__)
-cp = CryptoPay(
-    os.environ.get("CRYPTOBOT_TOKEN", ""),
-    webhook_manager=FlaskManager(app, "/cryptobot-webhook"),
-)
+
 
 @cp.invoice_paid()
 async def handle_payment(invoice: Invoice, message: Message):
