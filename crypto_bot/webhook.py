@@ -24,7 +24,7 @@ async def handle_payment(invoice: Invoice):
             return
 
         asyncio.run_coroutine_threadsafe(
-            process_successful_payment(shared_state.BOT, invoice.invoice_id),
+            process_successful_payment(shared_state.BOT, str(invoice.invoice_id)),
             shared_state.EVENT_LOOP
         )
 
