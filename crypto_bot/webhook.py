@@ -18,23 +18,19 @@ logger = logging.getLogger(__name__)
 
 
 @cp.invoice_paid()
-async def handle_payment(invoice: Invoice, message: Message):
-    print(type(invoice), type(message))
-    await message.answer(
-        f"invoice #{invoice.invoice_id} paid"
-    )
+async def handle_payment(invoice: Invoice, ):
+
     try:
         payment_id = invoice.payload
         if not payment_id:
             return
 
-        loop = shared_state.EVENT_LOOP
         if not shared_state.READY:
             return
 
         asyncio.run_coroutine_threadsafe(
-            process_successful_payment(message.bot, payment_id),
-            loop
+            process_successful_payment(shared_state.BOT, payment_id),
+            shared_state.EVENT_LOOP
         )
 
     except Exception as e:
