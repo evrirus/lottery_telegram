@@ -300,7 +300,7 @@ async def process_pay_stars(callback: types.CallbackQuery):
     config = get_config()
 
     payload = {
-        "email": "orion4605@gmail.com",
+        "email": "client@lava.top",
         "offerId": config.LAVATOP_OFFER_ID,
         "currency": "RUB",
         "clientUtm": {
