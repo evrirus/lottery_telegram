@@ -26,11 +26,10 @@ async def process_successful_payment(bot: Bot, payment_id: str):
         )
 
         # 1. Уведомляем пользователя
-        amount = transaction.amount.normalize()
         await bot.send_message(
             chat_id=transaction.user.telegram_id,
             text=f"✅ Оплата через CryptoBot прошла успешно!\n"
-                 f"Ваш баланс пополнен на {amount}р. Удачи в розыгрышах! 🍀"
+                 f"Ваш баланс пополнен на {int(transaction.amount)}р. Удачи в розыгрышах! 🍀"
         )
 
     except Exception as e:
