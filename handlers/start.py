@@ -175,185 +175,185 @@ async def process_buy_quantity(callback: types.CallbackQuery):
     await callback.answer()
 
 
-    @router_start.callback_query(F.data.startswith("pay_stars_"))
-    async def process_pay_stars(callback: types.CallbackQuery):
-        # payload: pay_stars_{quantity}
-        parts = callback.data.split("_")
+@router_start.callback_query(F.data.startswith("pay_stars_"))
+async def process_pay_stars(callback: types.CallbackQuery):
+    # payload: pay_stars_{quantity}
+    parts = callback.data.split("_")
 
-        total_price = int(parts[2])
-        rate = 0.9
-        stars = round(total_price * rate)
+    total_price = int(parts[2])
+    rate = 0.9
+    stars = round(total_price * rate)
 
-        payment_id = str(uuid.uuid4())
+    payment_id = str(uuid.uuid4())
 
-        user = await UserService.get_user(callback.from_user.id)
-        await TransactionService.create_transaction(
-            external_payment_id=payment_id,
-            user=user,
-            amount=Decimal(str(total_price)),
-            provider=PaymentProvider.TELEGRAM_STARS,
-            metadata={
-                "stars_amount": stars,
-                "rate": rate
-            }
+    user = await UserService.get_user(callback.from_user.id)
+    await TransactionService.create_transaction(
+        external_payment_id=payment_id,
+        user=user,
+        amount=Decimal(str(total_price)),
+        provider=PaymentProvider.TELEGRAM_STARS,
+        metadata={
+            "stars_amount": stars,
+            "rate": rate
+        }
+    )
+
+    await callback.message.delete()
+    await callback.message.answer_invoice(
+        title=f"Пополнение баланса на {total_price}₽",
+        description=f"Баланс можете потратить на покупку билета(-ов)",
+        payload=payment_id,
+        provider_token="",
+        currency="XTR",
+        prices=[LabeledPrice(label="Итого", amount=stars)]
+    )
+
+
+@router_start.callback_query(F.data.startswith("pay_cryptobot_"))
+async def process_pay_cryptobot(callback: types.CallbackQuery):
+    await callback.answer("⏳ Генерируем ссылку на оплату...", show_alert=False)
+
+    parts = callback.data.split("_")
+    total_price_rubles = int(parts[2])
+    usd_rate = await get_rate("USD")
+    total_price = round(total_price_rubles / usd_rate.price, 2)
+
+    payment_id = str(uuid.uuid4())
+
+    user = await UserService.get_user(callback.from_user.id)
+
+    # Запрашиваем ссылку у CryptoBot
+    invoice = await create_cryptobot_invoice(
+        lottery_prize=f"Баланс будет пополнен на {total_price_rubles}₽",
+        total_price=total_price,
+        payload=payment_id,
+        rate=usd_rate.price
+    )
+    payment_link = invoice.bot_invoice_url
+    await TransactionService.create_transaction(
+        external_payment_id=str(invoice.invoice_id),
+        user=user,
+        amount=Decimal(str(total_price_rubles)),
+        provider=PaymentProvider.CRYPTOBOT,
+        metadata={
+            "usd_amount": usd_rate.price,
+            "total_price": total_price,
+            "payment_link": payment_link
+        }
+    )
+    if payment_link:
+        kb = types.InlineKeyboardMarkup(inline_keyboard=[
+            [types.InlineKeyboardButton(text="💳 Оплатить сейчас", url=payment_link)],
+        ])
+
+        kb.inline_keyboard.extend(
+            inline_exit_to_payment_method().inline_keyboard
         )
 
-        await callback.message.delete()
-        await callback.message.answer_invoice(
-            title=f"Пополнение баланса на {total_price}₽",
-            description=f"Баланс можете потратить на покупку билета(-ов)",
-            payload=payment_id,
-            provider_token="",
-            currency="XTR",
-            prices=[LabeledPrice(label="Итого", amount=stars)]
+        await callback.message.edit_text(
+            f"💎 <b>Оплата через CryptoBot</b>\n\n"
+            f"К оплате: {total_price} USDT\n\n"
+            f"Нажмите на кнопку ниже, чтобы перейти к безопасной оплате. "
+            f"После оплаты бот автоматически выдаст вам билеты.",
+            reply_markup=kb
+        )
+    else:
+        await callback.message.edit_text(
+            "❌ Произошла ошибка при создании платежа. Попробуйте выбрать другой способ оплаты или обратитесь к админу."
         )
 
-
-    @router_start.callback_query(F.data.startswith("pay_cryptobot_"))
-    async def process_pay_cryptobot(callback: types.CallbackQuery):
-        await callback.answer("⏳ Генерируем ссылку на оплату...", show_alert=False)
-
-        parts = callback.data.split("_")
-        total_price_rubles = int(parts[2])
-        usd_rate = await get_rate("USD")
-        total_price = round(total_price_rubles / usd_rate.price, 2)
-
-        payment_id = str(uuid.uuid4())
-
-        user = await UserService.get_user(callback.from_user.id)
-
-        # Запрашиваем ссылку у CryptoBot
-        invoice = await create_cryptobot_invoice(
-            lottery_prize=f"Баланс будет пополнен на {total_price_rubles}₽",
-            total_price=total_price,
-            payload=payment_id,
-            rate=usd_rate.price
-        )
-        payment_link = invoice.bot_invoice_url
-        await TransactionService.create_transaction(
-            external_payment_id=str(invoice.invoice_id),
-            user=user,
-            amount=Decimal(str(total_price_rubles)),
-            provider=PaymentProvider.CRYPTOBOT,
-            metadata={
-                "usd_amount": usd_rate.price,
-                "total_price": total_price,
-                "payment_link": payment_link
-            }
-        )
-        if payment_link:
-            kb = types.InlineKeyboardMarkup(inline_keyboard=[
-                [types.InlineKeyboardButton(text="💳 Оплатить сейчас", url=payment_link)],
-            ])
-
-            kb.inline_keyboard.extend(
-                inline_exit_to_payment_method().inline_keyboard
-            )
-
-            await callback.message.edit_text(
-                f"💎 <b>Оплата через CryptoBot</b>\n\n"
-                f"К оплате: {total_price} USDT\n\n"
-                f"Нажмите на кнопку ниже, чтобы перейти к безопасной оплате. "
-                f"После оплаты бот автоматически выдаст вам билеты.",
-                reply_markup=kb
-            )
-        else:
-            await callback.message.edit_text(
-                "❌ Произошла ошибка при создании платежа. Попробуйте выбрать другой способ оплаты или обратитесь к админу."
-            )
-
-    # 5. Успешная оплата (также обновлена для работы с ID)
-    @router_start.pre_checkout_query()
-    async def on_pre_checkout_query(pre_checkout_q: types.PreCheckoutQuery):
-        try:
-            payment_id = pre_checkout_q.invoice_payload
-            transaction = await TransactionService.get_transaction(payment_id)
-
-            # защита от подмены пользователя
-            if pre_checkout_q.from_user.id != transaction.user.telegram_id:
-                await pre_checkout_q.answer(
-                    ok=False,
-                    error_message="⚠️ Несоответствие пользователя платежа."
-                )
-                return
-
-            await pre_checkout_q.answer(ok=True)
-
-        except Exception as e:
-            logger.exception(e)
-            await pre_checkout_q.answer(
-                ok=False,
-                error_message="⚠️ Ошибка обработки платежа."
-            )
-
-
-    @router_start.message(F.successful_payment)
-    async def on_successful_payment(message: types.Message):
-        payment_id = message.successful_payment.invoice_payload
+# 5. Успешная оплата (также обновлена для работы с ID)
+@router_start.pre_checkout_query()
+async def on_pre_checkout_query(pre_checkout_q: types.PreCheckoutQuery):
+    try:
+        payment_id = pre_checkout_q.invoice_payload
         transaction = await TransactionService.get_transaction(payment_id)
 
-        success = await UserService.add_balance(
-            transaction.user.telegram_id,
-            transaction.amount
-        )
-        if success:
-            await message.answer(f"⭐ Оплата прошла успешно! Ваш баланс пополнен на {transaction.amount}р. Удачи в розыгрышах! 🍀")
+        # защита от подмены пользователя
+        if pre_checkout_q.from_user.id != transaction.user.telegram_id:
+            await pre_checkout_q.answer(
+                ok=False,
+                error_message="⚠️ Несоответствие пользователя платежа."
+            )
+            return
 
+        await pre_checkout_q.answer(ok=True)
 
-    @router_start.callback_query(F.data.startswith("pay_sbp_"))
-    async def process_pay_stars(callback: types.CallbackQuery):
-        parts = callback.data.split("_")
-        print(parts)
-        quantity = int(parts[2])
-        await callback.answer(f"⏳ Генерируем ссылку на оплату... {quantity} Рубчиков")
-
-        config = get_config()
-        payload = {
-            "email": "client@lava.top",
-            "offerId": config.LAVATOP_OFFER_ID,
-            "currency": "RUB",
-            "clientUtm": {
-                "telegram_id": callback.from_user.id
-            },
-            "amount": quantity,
-            "paymentMethod": "SBP",
-            "paymentProvider": "PAY2ME"
-        }
-
-        headers = {
-            "X-Api-Key": config.LAVATOP_TOKEN,
-            "Accept": "application/json"
-        }
-
-        async with aiohttp.ClientSession() as session:
-            async with session.post(
-                    "https://gate.lava.top/api/v3/invoice",
-                    json=payload,
-                    headers=headers
-            ) as response:
-                text = await response.text()
-
-                if response.status not in (200, 201):
-                    raise Exception(text)
-
-                invoice = await response.json(content_type=None)
-
-        payment_url = invoice.get("paymentUrl")
-        payment_id = invoice.get("id")
-
-        user = await UserService.get_user(callback.from_user.id)
-        await Transaction.create(
-            external_payment_id=payment_id,
-            user=user,
-            amount=quantity,
-            provider=PaymentProvider.LAVA_SBP,
-            metadata={
-                "payment_url": payment_url,
-                "method": "SBP"
-            }
+    except Exception as e:
+        logger.exception(e)
+        await pre_checkout_q.answer(
+            ok=False,
+            error_message="⚠️ Ошибка обработки платежа."
         )
 
-        await callback.message.answer(f"{payment_id=}\n{payment_url=}")
+
+@router_start.message(F.successful_payment)
+async def on_successful_payment(message: types.Message):
+    payment_id = message.successful_payment.invoice_payload
+    transaction = await TransactionService.get_transaction(payment_id)
+
+    success = await UserService.add_balance(
+        transaction.user.telegram_id,
+        transaction.amount
+    )
+    if success:
+        await message.answer(f"⭐ Оплата прошла успешно! Ваш баланс пополнен на {transaction.amount}р. Удачи в розыгрышах! 🍀")
+
+
+@router_start.callback_query(F.data.startswith("pay_sbp_"))
+async def process_pay_stars(callback: types.CallbackQuery):
+    parts = callback.data.split("_")
+    print(parts)
+    quantity = int(parts[2])
+    await callback.answer(f"⏳ Генерируем ссылку на оплату... {quantity} Рубчиков")
+
+    config = get_config()
+    payload = {
+        "email": "client@lava.top",
+        "offerId": config.LAVATOP_OFFER_ID,
+        "currency": "RUB",
+        "clientUtm": {
+            "telegram_id": callback.from_user.id
+        },
+        "amount": quantity,
+        "paymentMethod": "SBP",
+        "paymentProvider": "PAY2ME"
+    }
+
+    headers = {
+        "X-Api-Key": config.LAVATOP_TOKEN,
+        "Accept": "application/json"
+    }
+
+    async with aiohttp.ClientSession() as session:
+        async with session.post(
+                "https://gate.lava.top/api/v3/invoice",
+                json=payload,
+                headers=headers
+        ) as response:
+            text = await response.text()
+
+            if response.status not in (200, 201):
+                raise Exception(text)
+
+            invoice = await response.json(content_type=None)
+
+    payment_url = invoice.get("paymentUrl")
+    payment_id = invoice.get("id")
+
+    user = await UserService.get_user(callback.from_user.id)
+    await Transaction.create(
+        external_payment_id=payment_id,
+        user=user,
+        amount=quantity,
+        provider=PaymentProvider.LAVA_SBP,
+        metadata={
+            "payment_url": payment_url,
+            "method": "SBP"
+        }
+    )
+
+    await callback.message.answer(f"{payment_id=}\n{payment_url=}")
 
 # 6. Кнопка "Назад к списку" (опционально, можно добавить в клавиатуру количества билетов)
 @router_start.callback_query(F.data == "cancel_buy")
