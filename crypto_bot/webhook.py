@@ -18,6 +18,8 @@ logger = logging.getLogger(__name__)
 
 @cp.invoice_paid()
 async def handle_payment(invoice: Invoice):
+    logger.info("CryptoPay webhook received")
+    logger.info(invoice.model_dump())
     try:
         logger.info(
             f"Payment success: {invoice.amount} {invoice.invoice_id}")

@@ -11,3 +11,4 @@ cp = CryptoPay(
     network=TESTNET
 )
 print(app.url_map)
+print("FLASK INSTANCE:", id(app))
