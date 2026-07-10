@@ -4,13 +4,13 @@ import threading
 from bot import main as bot_main
 from config import init_config, get_config
 from crypto_bot.webhook import app as flask_app
-import utils
+from utils.port import check_port
 
 
 def run_flask():
     print("MAIN FLASK INSTANCE:", id(flask_app))
 
-    if utils.check_port(5000):
+    if check_port(5000):
         raise RuntimeError(
             "Port 5000 is already occupied"
         )
