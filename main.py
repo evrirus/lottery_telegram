@@ -4,7 +4,7 @@ import threading
 from bot import main as bot_main
 from config import init_config, get_config
 from crypto_bot.webhook import app as flask_app
-from . import utils
+import utils
 
 
 def run_flask():
