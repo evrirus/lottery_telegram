@@ -49,4 +49,3 @@ async def main(config):
     print("Bot started")
 
     await dp.start_polling(bot)
-    await cp.start_polling()
