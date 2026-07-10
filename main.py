@@ -7,9 +7,9 @@ from crypto_bot.webhook import app as flask_app
 
 
 def run_flask():
+    print("MAIN FLASK INSTANCE:", id(flask_app))
     flask_app.run(host="0.0.0.0", port=5000)
 
-    print("MAIN FLASK INSTANCE:", id(flask_app))
 
 
 if __name__ == "__main__":
@@ -23,7 +23,7 @@ if __name__ == "__main__":
     init_config(debug=args.debug, proxy=args.proxy)
 
     # ❗ 1. Flask в фоне
-    threading.Thread(target=run_flask, daemon=True).start()
+    threading.Thread(target=run_flask).start()
 
     # ❗ 2. AIogram В MAIN THREAD (ВАЖНО)
     config = get_config()
