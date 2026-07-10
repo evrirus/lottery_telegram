@@ -8,6 +8,7 @@ from aiogram.fsm.storage.memory import MemoryStorage
 
 import utils.shared_state as shared_state
 from config import create_session
+from crypto_bot.client import cp
 from database.models import init_tortoise
 from handlers.admin.create_lottery import router as create_lottery_router
 from handlers.admin.refund import router as refund_router
@@ -48,3 +49,4 @@ async def main(config):
     print("Bot started")
 
     await dp.start_polling(bot)
+    await cp.start_polling()

@@ -3,7 +3,6 @@ import asyncio
 import logging
 
 import dotenv
-from aiogram.types import Message
 from aiosend.types import Invoice
 from flask import request
 
@@ -30,6 +29,8 @@ async def handle_payment(invoice: Invoice):
             process_successful_payment(shared_state.BOT, str(invoice.invoice_id)),
             shared_state.EVENT_LOOP
         )
+        logger.info("invoice_paid event received")
+        logger.info(invoice.model_dump())
 
     except Exception as e:
         logger.error(e, exc_info=True)
