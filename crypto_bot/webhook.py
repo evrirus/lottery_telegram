@@ -89,6 +89,10 @@ def webhook_lavatop():
         logger.error(f"LavaTop webhook error: {e}", exc_info=True)
         return "OK", 200
 
+@app.before_request
+def log_requests():
+    print("REQUEST:", request.method, request.path)
+
 if __name__ == '__main__':
     init_config(debug=False)
     app.run(host='0.0.0.0', port=5000, debug=True)
