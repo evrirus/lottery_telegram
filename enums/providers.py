@@ -1,6 +1,6 @@
 import enum
 
 
-class ProvidersFiat(enum.Enum, str):
+class ProvidersFiat(str, enum.Enum):
     LAVA = "lava"
     CRYPTOBOT = "cryptobot"
