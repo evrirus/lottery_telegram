@@ -84,9 +84,6 @@ def webhook_lavatop():
             loop,
         )
 
-        UserService.add_balance(telegram_id=telegram_id,
-                                amount=amount)
-
         return "OK", 200
 
     except Exception as e:
