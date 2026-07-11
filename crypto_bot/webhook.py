@@ -9,6 +9,7 @@ from flask import request
 from config import init_config, get_config
 from crypto_bot.client import cp, app
 from database.service.user import UserService
+from enums.providers import ProvidersFiat
 from handlers.payment_handler import process_successful_payment
 from utils import shared_state
 
@@ -28,7 +29,8 @@ async def handle_payment(invoice: Invoice):
             return
 
         asyncio.run_coroutine_threadsafe(
-            process_successful_payment(shared_state.BOT, str(invoice.invoice_id)),
+            process_successful_payment(shared_state.BOT, str(invoice.invoice_id),
+                                       provider=ProvidersFiat.CRYPTOBOT),
             shared_state.EVENT_LOOP
         )
         logger.info("invoice_paid event received")
@@ -52,7 +54,7 @@ def webhook_lavatop():
             return "Invalid API key", 403
 
         data = request.get_json(silent=True)
-
+        logger.info(f"{data}")
         if not data:
             return "OK", 200
 
@@ -78,8 +80,8 @@ def webhook_lavatop():
         bot = shared_state.BOT
         loop = shared_state.EVENT_LOOP
         asyncio.run_coroutine_threadsafe(
-            process_successful_payment(bot, contract_id),
-            loop
+            process_successful_payment(bot, contract_id, provider=ProvidersFiat.LAVA),
+            loop,
         )
 
         UserService.add_balance(telegram_id=telegram_id,
