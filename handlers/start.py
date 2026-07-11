@@ -352,8 +352,20 @@ async def process_pay_stars(callback: types.CallbackQuery):
             "method": "SBP"
         }
     )
+    kb = types.InlineKeyboardMarkup(inline_keyboard=[
+        [types.InlineKeyboardButton(text="💳 Оплатить сейчас", url=payment_url)],
+    ])
 
-    await callback.message.answer(f"{payment_id=}\n{payment_url=}")
+    kb.inline_keyboard.extend(
+        inline_exit_to_payment_method().inline_keyboard
+    )
+    await callback.message.edit_text(
+        f"💎 <b>Оплата через СБП</b>\n\n"
+        f"К оплате: {quantity} RUB\n\n"
+        f"Нажмите на кнопку ниже, чтобы перейти к безопасной оплате. "
+        f"После оплаты бот автоматически выдаст вам билеты.",
+        reply_markup=kb
+    )
 
 # 6. Кнопка "Назад к списку" (опционально, можно добавить в клавиатуру количества билетов)
 @router_start.callback_query(F.data == "cancel_buy")
