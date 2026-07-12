@@ -8,14 +8,13 @@ from aiogram.fsm.storage.memory import MemoryStorage
 
 import utils.shared_state as shared_state
 from config import create_session
-from crypto_bot.client import cp
 from database.models import init_tortoise
 from handlers.admin.create_lottery import router as create_lottery_router
 from handlers.admin.refund import router as refund_router
-from handlers.start import router_start
-from handlers.replenish import router as replenish_router
 from handlers.inline_mode.referral import router as referral_router
 from handlers.my_tickets import router as my_tickets_router
+from handlers.replenish import router as replenish_router
+from handlers.start import router_start
 
 
 async def main(config):
