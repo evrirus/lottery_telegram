@@ -116,10 +116,6 @@ def to_replenish_keyboard() -> InlineKeyboardMarkup:
     builder = InlineKeyboardBuilder()
     amounts = [100, 300, 500, 1000, 2000, 5000, 7500]
 
-    builder.button(
-        text=f"{50} ₽[TEST]",
-        callback_data=f"replenish_{50}"
-    )
     for amount in amounts:
         builder.button(
             text=f"{amount} ₽",
@@ -128,7 +124,7 @@ def to_replenish_keyboard() -> InlineKeyboardMarkup:
 
     builder.button(
         text="❌ Отменить",
-        callback_data="lotteries"
+        callback_data="start"
     )
 
     builder.adjust(3, 4, 1)
