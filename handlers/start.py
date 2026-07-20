@@ -52,6 +52,7 @@ async def cmd_start(message: types.Message, command: CommandObject):
     if command:
         if command == StartCommand.REPLENISH:
             await show_replenish(message.from_user.id, message)
+        return
 
 
     text = "🎟 Главное меню 👇"
