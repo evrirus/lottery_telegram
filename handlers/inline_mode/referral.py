@@ -6,7 +6,7 @@ from aiogram.utils.deep_linking import create_start_link
 from aiogram.utils.payload import encode_payload
 
 from database.service.lottery import LotteryService
-from keyboards.inline import create_inline_ref_keyboard, lottery_keyboard, inlinequery_lottery_keyboard
+from keyboards.inline import create_inline_ref_keyboard, inlinequery_lottery_keyboard
 
 router = Router()
 
