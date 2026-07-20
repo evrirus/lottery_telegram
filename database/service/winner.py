@@ -3,6 +3,7 @@ from typing import Optional
 
 from tortoise.transactions import in_transaction
 
+from database.models import LotteryStatus
 from database.repo.lottery import LotteryRepository
 from database.repo.ticket import TicketRepository
 
@@ -15,7 +16,7 @@ class WinnerService:
 
             lottery = await LotteryRepository.get_for_update(lottery_id)
 
-            if lottery.status != "active":
+            if lottery.status != LotteryStatus.ACTIVE:
                 return None
 
             # получаем (user_id, quantity)
@@ -27,7 +28,7 @@ class WinnerService:
             # weighted selection
             winner_id = WinnerService._weighted_choice(participants)
 
-            lottery.status = "completed"
+            lottery.status = LotteryStatus.COMPLETED
             lottery.winner_user_id = winner_id
 
             await LotteryRepository.save(lottery)

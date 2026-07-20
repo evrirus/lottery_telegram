@@ -1,4 +1,6 @@
 # repositories/lottery_repo.py
+from typing import Optional
+
 from database.models import Lottery, LotteryStatus
 
 
@@ -15,8 +17,15 @@ class LotteryRepository:
         )
 
     @staticmethod
-    async def get_actives():
-        return await Lottery.filter(status="active").order_by("-id")
+    async def get_actives(limit: int | None = None):
+        query = Lottery.filter(
+            status=LotteryStatus.ACTIVE
+        ).order_by("-id")
+
+        if limit:
+            query = query.limit(limit)
+
+        return await query
 
     @staticmethod
     def get_by_id(lottery_id: int):

@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 
 from tortoise.transactions import in_transaction
 
@@ -13,8 +13,8 @@ class LotteryService:
         return await LotteryRepository.create(prize, price, total, channel_id, photo_file_id)
 
     @staticmethod
-    async def get_actives() -> List[Lottery]:
-        return await LotteryRepository.get_actives()
+    async def get_actives(limit: Optional[int] = 10) -> List[Lottery]:
+        return await LotteryRepository.get_actives(limit=limit)
 
     @staticmethod
     async def get_lottery(
@@ -34,7 +34,7 @@ class LotteryService:
         async with in_transaction():
             lottery = await LotteryRepository.get_for_update(lottery_id)
 
-            if lottery.status != "active":
+            if lottery.status != LotteryStatus.ACTIVE:
                 return False
 
             available = lottery.total_tickets - lottery.sold_tickets

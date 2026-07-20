@@ -3,7 +3,6 @@ import uuid
 from aiogram import Router
 from aiogram.types import InlineQueryResultArticle, InputTextMessageContent, InlineQuery, InlineQueryResultsButton
 from aiogram.utils.deep_linking import create_start_link
-from aiogram.utils.payload import encode_payload
 
 from database.service.lottery import LotteryService
 from database.service.user import UserService
@@ -14,7 +13,6 @@ router = Router()
 
 @router.inline_query()
 async def inline_query_handler(query: InlineQuery):
-    text = query.query.strip()
     payload = create_payload({
         PayloadKey.REFERRER_ID: query.from_user.id
     })
@@ -33,17 +31,7 @@ async def inline_query_handler(query: InlineQuery):
                 )
             ),
             reply_markup=create_inline_ref_keyboard(ref_link)
-        ),
-        InlineQueryResultArticle(
-            id=str(uuid.uuid4()),
-            title=f"Отправить: {text or 'Привет, как дела?'}",
-            description="Нажмите, чтобы отправить сообщение",
-            input_message_content=InputTextMessageContent(
-                message_text="ЗХАЩВЫХЗАВЫХЗ!"
-            )
-        ),
-
-
+        )
     ]
 
     active_lotteries = await LotteryService.get_actives()
@@ -73,12 +61,17 @@ async def inline_query_handler(query: InlineQuery):
     results.extend(inline_active_lotteries)
 
     user = await UserService.get_user(query.from_user.id)
+    balance = (
+        user.balance_display
+        if user
+        else "0 ₽"
+    )
     await query.answer(
         results=results,
         cache_time=1,
         is_personal=True,
         button=InlineQueryResultsButton(
-            text=f"Ваш баланс: {user.balance_display}",
+            text=f"Ваш баланс: {balance}",
             start_parameter=create_payload({
                 PayloadKey.COMMAND: StartCommand.REPLENISH
             })
