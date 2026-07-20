@@ -1,5 +1,10 @@
+# utils/payload.py
+
 import json
 from typing import Any
+
+from aiogram.utils.payload import encode_payload, decode_payload
+
 from enum import Enum
 
 
@@ -7,27 +12,28 @@ class PayloadKey(str, Enum):
     REFERRER_ID = "r"
     LOTTERY_ID = "l"
 
-
 def create_payload(data: dict[PayloadKey, Any]) -> str:
-    prepared_data = {
-        key.value if isinstance(key, PayloadKey) else key: value
-        for key, value in data.items()
-    }
+    """
+    Создает deep-link payload.
 
-    return json.dumps(
-        prepared_data,
-        separators=(",", ":")
+    :param data: Данные для передачи через /start
+    :return: Закодированный payload
+    """
+
+    return encode_payload(
+        json.dumps(data, separators=(",", ":"))
     )
 
-
 def get_payload(payload: str) -> dict[PayloadKey, Any]:
+    """
+    Декодирует deep-link payload.
+
+    :param payload: command.args из /start
+    """
+
     try:
-        data = json.loads(payload)
-
-        return {
-            PayloadKey(key): value
-            for key, value in data.items()
-        }
-
+        return json.loads(
+            decode_payload(payload)
+        )
     except (ValueError, json.JSONDecodeError):
         return {}
