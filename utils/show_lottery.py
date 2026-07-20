@@ -39,18 +39,9 @@ async def show_lottery(
     builder = InlineKeyboardBuilder()
 
     if lottery.status == LotteryStatus.ACTIVE:
-        payload = create_payload({
-            PayloadKey.LOTTERY_ID: lottery.id,
-        })
-
-        link = await create_start_link(
-            bot,
-            payload
-        )
-
         builder.button(
             text="🎟 Участвовать",
-            url=link
+            callback_data=f"select_lottery_{lottery.id}",
         )
 
     builder.button(
