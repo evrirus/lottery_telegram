@@ -23,7 +23,7 @@ class LotteryService:
     ):
         query = LotteryRepository.get_by_id(lottery_id)
 
-        if status:
+        if status is not None:
             query = query.filter(status=status)
 
         return await query.first()

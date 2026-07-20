@@ -11,11 +11,13 @@ async def show_lottery(
     message: types.Message,
     lottery_id: int
 ):
+    print("SEARCH ID:", lottery_id)
+
     lottery = await LotteryService.get_lottery(
-        lottery_id=lottery_id,
-        status=LotteryStatus.COMPLETED
+        lottery_id=lottery_id
     )
 
+    print("RESULT:", lottery)
     text = (
         f"🎁 <b>Лотерея #{lottery.id}</b>\n\n"
         f"🏆 Приз: {lottery.prize}\n"
