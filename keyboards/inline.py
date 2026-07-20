@@ -1,5 +1,6 @@
 # keyboards/inline.py
 from aiogram.enums import ButtonStyle
+from aiogram.utils.deep_linking import create_start_link
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
@@ -188,11 +189,12 @@ def my_tickets_keyboard(tickets: list[Ticket], user_id: int) -> InlineKeyboardMa
     builder.adjust(3)
     return builder.as_markup()
 
-def lottery_keyboard(lottery: Lottery) -> InlineKeyboardMarkup:
+def inlinequery_lottery_keyboard(link: str) -> InlineKeyboardMarkup:
     builder = InlineKeyboardBuilder()
+
     builder.button(
         text="🎟 Участвовать",
-        callback_data=f"lottery_{lottery.id}"
+        url=link
     )
 
     return builder.as_markup()
