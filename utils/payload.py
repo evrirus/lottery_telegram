@@ -25,15 +25,13 @@ def create_payload(data: dict[PayloadKey, Any]) -> str:
     )
 
 def get_payload(payload: str) -> dict[PayloadKey, Any]:
-    """
-    Декодирует deep-link payload.
-
-    :param payload: command.args из /start
-    """
-
     try:
-        return json.loads(
-            decode_payload(payload)
-        )
+        data = json.loads(payload)
+
+        return {
+            PayloadKey(key): value
+            for key, value in data.items()
+        }
+
     except (ValueError, json.JSONDecodeError):
         return {}
