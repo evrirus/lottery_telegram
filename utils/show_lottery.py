@@ -37,11 +37,11 @@ async def show_lottery(
         text += f'<b>Лотерея активна, <a href="{url}">участвуйте!</a></b>'
 
     if isinstance(message, types.Message):
-        return await message.edit_text(
+        return await message.answer(
             text,
             reply_markup=cancel_button("start")
         )
-    message: types.CallbackQuery
+
     await message.message.answer(
         text,
         reply_markup=cancel_button("start")
