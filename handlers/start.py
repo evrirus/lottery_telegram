@@ -31,7 +31,7 @@ async def cmd_start(message: types.Message, command: CommandObject):
     referrer_id = int(payload) if payload and payload.isdigit() else None
     _, registered = await UserService.register(message.from_user.id, referrer_id=referrer_id)
 
-    text = "Выберите действие"
+    text = "🎟 Главное меню 👇"
     if registered:
         text = "Мы рады вас приветствовать!\n\n" + text
 
@@ -44,7 +44,7 @@ async def cmd_start(message: types.Message, command: CommandObject):
 async def cmd_start(message: types.Message):
     _, registered = await UserService.register(message.from_user.id)
 
-    text = "Выберите действие"
+    text = "🎟 Главное меню 👇"
     if registered:
         text = "Мы рады вас приветствовать!\n\n" + text
 
