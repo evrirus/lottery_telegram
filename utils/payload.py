@@ -10,6 +10,11 @@ from aiogram.utils.payload import encode_payload
 class PayloadKey(str, Enum):
     REFERRER_ID = "r"
     LOTTERY_ID = "l"
+    COMMAND = "c"
+
+class StartCommand(str, Enum):
+    REPLENISH = "r"
+
 
 def create_payload(data: dict[PayloadKey, Any]) -> str:
     """

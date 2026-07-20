@@ -7,18 +7,20 @@ from database.service.ticket import TicketService
 from database.service.user import UserService
 from keyboards.inline import to_replenish_keyboard, get_payment_method_keyboard
 from service.lottery_logic import check_and_announce_winner
+from utils.show.show_replenish import show_replenish
 
 router = Router()
 
 
 @router.callback_query(F.data == "replenish")
-async def replenish_handler(cbd: CallbackQuery):
-    user = await UserService.get_user(cbd.message.chat.id)
-    balance = user.balance.quantize(Decimal("1"))
-    await cbd.message.edit_text(
-        f"Ваш баланс: {balance}р\n\n",
-        reply_markup=to_replenish_keyboard()
+async def replenish_handler(callback: CallbackQuery):
+
+    await show_replenish(
+        user_id=callback.from_user.id,
+        message=callback.message
     )
+
+    await callback.answer()
 
 @router.callback_query(lambda c: c.data.startswith("replenish_"))
 async def replenish__handler(cbd: CallbackQuery):

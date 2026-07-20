@@ -2,10 +2,9 @@ from aiogram import Router, types, F
 from aiogram.filters import Command
 
 from database.models import LotteryStatus
-from database.service.lottery import LotteryService
 from database.service.ticket import TicketService
 from keyboards.inline import my_tickets_keyboard, cancel_button
-from utils.show_lottery import show_lottery
+from utils.show.show_lottery import show_lottery
 
 router = Router()
 

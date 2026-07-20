@@ -1,11 +1,8 @@
 from aiogram import Bot, types
-from aiogram.utils.deep_linking import create_start_link
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 from database.models import LotteryStatus
 from database.service.lottery import LotteryService
-from keyboards.inline import cancel_button
-from utils.payload import create_payload, PayloadKey
 
 
 async def show_lottery(

@@ -79,6 +79,8 @@ async def inline_query_handler(query: InlineQuery):
         is_personal=True,
         button=InlineQueryResultsButton(
             text=f"Ваш баланс: {user.balance_display}",
-            start_parameter=encode_payload("start")
+            start_parameter=create_payload({
+                PayloadKey.COMMAND: "replenish"
+            })
         )
     )
