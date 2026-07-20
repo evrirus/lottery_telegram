@@ -108,8 +108,16 @@ def start_keyboard() -> InlineKeyboardMarkup:
         text="⛲ История",
         callback_data="my_history"
     )
+    builder.button(
+        text="Пользовательское соглашение",
+        url="https://telegra.ph/Polzovatelskoe-soglashenie-Telegram-bota-Nazvanie-bota-07-15"
+    )
+    builder.button(
+        text="Политика конфиденциальности",
+        url="https://telegra.ph/Politika-konfidencialnosti-Telegram-bota-Lottio-07-15"
+    )
 
-    builder.adjust(2, repeat=True)
+    builder.adjust(1, 1, 2, 2, repeat=True)
     return builder.as_markup()
 
 
