@@ -1,4 +1,3 @@
-from decimal import Decimal
 from enum import Enum
 
 from tortoise import Tortoise
@@ -6,13 +5,10 @@ from tortoise import models, fields
 
 from config import TORTOISE_ORM
 
-DB_PATH = "lottery.db"
-
-DB_URL = "sqlite://lottery.db"
 
 async def init_tortoise():
     await Tortoise.init(config=TORTOISE_ORM)
-    await Tortoise.generate_schemas()
+    # await Tortoise.generate_schemas()
 
 class LotteryStatus(str, Enum):
     ACTIVE = "active"

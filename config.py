@@ -81,7 +81,7 @@ def create_session():
 
 TORTOISE_ORM = {
     "connections": {
-        "default": "sqlite://lottery.db"
+        "default": "postgres://lottery_user:твой_пароль@localhost:5432/lottery"
     },
     "apps": {
         "models": {
