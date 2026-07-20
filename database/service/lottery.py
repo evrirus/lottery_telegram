@@ -17,10 +17,13 @@ class LotteryService:
         return await LotteryRepository.get_actives()
 
     @staticmethod
-    async def get_lottery(lottery_id: int, status: LotteryStatus = LotteryStatus.ACTIVE):
-        query = await LotteryRepository.get_by_id(lottery_id)
+    async def get_lottery(
+            lottery_id: int,
+            status: LotteryStatus | None = None
+    ):
+        query = LotteryRepository.get_by_id(lottery_id)
 
-        if status is not None:
+        if status:
             query = query.filter(status=status)
 
         return await query.first()
