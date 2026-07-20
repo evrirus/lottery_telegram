@@ -46,8 +46,9 @@ async def cmd_start(message: types.Message, command: CommandObject):
             message=message,
             lottery_id=lottery_id
         )
-
+    print(payload)
     command = payload.get(PayloadKey.COMMAND)
+    print(command)
     if command:
         if command == StartCommand.REPLENISH:
             await show_replenish(message.from_user.id, message)

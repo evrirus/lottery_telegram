@@ -8,7 +8,7 @@ from aiogram.utils.payload import encode_payload
 from database.service.lottery import LotteryService
 from database.service.user import UserService
 from keyboards.inline import create_inline_ref_keyboard, inlinequery_lottery_keyboard
-from utils.payload import create_payload, PayloadKey
+from utils.payload import create_payload, PayloadKey, StartCommand
 
 router = Router()
 
@@ -80,7 +80,7 @@ async def inline_query_handler(query: InlineQuery):
         button=InlineQueryResultsButton(
             text=f"Ваш баланс: {user.balance_display}",
             start_parameter=create_payload({
-                PayloadKey.COMMAND: "replenish"
+                PayloadKey.COMMAND: StartCommand.REPLENISH
             })
         )
     )
