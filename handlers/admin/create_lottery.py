@@ -25,48 +25,101 @@ async def cmd_create(message: Message, state: FSMContext):
     config = get_config()
     ADMIN_ID = config.ADMIN_ID
     #todo: расскоментить
-    # if message.from_user.id != ADMIN_ID:
-    #     return
+    if message.from_user.id != ADMIN_ID:
+        return
 
-    await message.answer("Введите описание приза:")
+    await message.answer(
+        "🎁 <b>Создание розыгрыша</b>\n\n"
+        "Шаг 1/6 — укажите приз\n\n"
+        "Введите название приза:\n"
+        "Например: <i>iPhone 17 Pro 256GB</i>"
+    )
     await state.set_state(CreateLotteryState.waiting_for_prize)
 
 
 @router.message(CreateLotteryState.waiting_for_prize)
 async def process_prize(message: Message, state: FSMContext):
     await state.update_data(prize=message.text)
-    await message.answer("Введите цену одного билета в $RUB:")
+    await message.answer(
+        "💰 <b>Создание розыгрыша</b>\n\n"
+        "Шаг 2/6 — цена билета\n\n"
+        "Введите стоимость одного билета в рублях:\n"
+        "Например: <code>100</code>"
+    )
     await state.set_state(CreateLotteryState.waiting_for_price)
 
 
 @router.message(CreateLotteryState.waiting_for_price)
 async def process_price(message: Message, state: FSMContext):
-    if not message.text.isdigit():
-        return await message.answer("Введите число")
+    if not message.text:
+        return await message.answer("❌ Введите стоимость билета числом")
 
-    price = int(message.text)
+    try:
+        price = int(message.text.replace(" ", ""))
+    except ValueError:
+        return await message.answer(
+            "❌ Некорректная цена\n\n"
+            "Введите сумму числом:\n"
+            "Например: <code>100</code> ₽"
+        )
 
     if price < 100:
-        return await message.answer("Цена билета не может быть меньше 100 ₽")
+        return await message.answer(
+            "❌ Минимальная стоимость билета — 100 ₽"
+        )
+
+    if price > 1_000_000:
+        return await message.answer(
+            "❌ Слишком большая стоимость билета"
+        )
 
     await state.update_data(price=price)
-    await message.answer("Введите общее количество билетов:")
-    await state.set_state(CreateLotteryState.waiting_for_total)
 
+    await message.answer(
+        "🎟 <b>Шаг 3/6 — количество билетов</b>\n\n"
+        "Введите общее количество билетов:\n"
+        "Например: <code>1000</code>"
+    )
+
+    await state.set_state(CreateLotteryState.waiting_for_total)
 
 @router.message(CreateLotteryState.waiting_for_total)
 async def process_total(message: Message, state: FSMContext):
-    if not message.text.isdigit():
-        return await message.answer("Введите число")
+    if not message.text:
+        return await message.answer(
+            "❌ Введите количество билетов числом"
+        )
 
-    await state.update_data(total=int(message.text))
+    try:
+        total = int(message.text.replace(" ", ""))
+    except ValueError:
+        return await message.answer(
+            "❌ Некорректное количество\n\n"
+            "Введите число:\n"
+            "Например: <code>1000</code>"
+        )
+
+    # if total < 10:
+    #     return await message.answer(
+    #         "❌ Минимальное количество билетов — 10"
+    #     )
+    #
+    if total > 1_000_000:
+        return await message.answer(
+            "❌ Слишком большое количество билетов"
+        )
+
+    await state.update_data(total=total)
 
     await message.answer(
-        "Перешлите сообщение из канала или введите ID канала:"
+        "📢 <b>Шаг 4/6 — канал публикации</b>\n\n"
+        "Перешлите сообщение из канала\n"
+        "или отправьте ID канала.\n\n"
+        "Пример:\n"
+        "<code>-1001234567890</code>"
     )
 
     await state.set_state(CreateLotteryState.waiting_for_channel)
-
 @router.callback_query(
     CreateLotteryState.waiting_for_publish,
     F.data == "lottery_add_photo"
@@ -74,7 +127,7 @@ async def process_total(message: Message, state: FSMContext):
 async def add_photo(callback: CallbackQuery, state: FSMContext):
     await state.set_state(CreateLotteryState.waiting_for_photo)
 
-    await callback.message.answer(
+    await callback.message.edit_text(
         "Отправьте фотографию для розыгрыша."
     )
 
@@ -110,7 +163,7 @@ async def publish_lottery(
 ):
     data = await state.get_data()
 
-    await LotteryService.create(
+    lottery = await LotteryService.create(
         data["prize"],
         data["price"],
         data["total"],
@@ -119,46 +172,85 @@ async def publish_lottery(
     )
 
     await callback.message.edit_text(
-        "✅ Лотерея создана!"
+        "✅ <b>Розыгрыш создан!</b>\n\n"
+        f"🎁 {lottery.prize}\n"
+        f"🎟 Билетов: {lottery.total_tickets}\n"
+        f"💰 Цена: {lottery.ticket_price} ₽"
     )
 
     await state.clear()
 
+from aiogram.exceptions import TelegramBadRequest
+
+
 @router.message(CreateLotteryState.waiting_for_channel)
 async def process_channel(message: Message, state: FSMContext):
-    try:
-        channel_id = (
-            message.forward_from_chat.id
-            if message.forward_from_chat
-            else int(message.text)
+    channel_id = None
+
+    # Пересланное сообщение из канала
+    if message.forward_from_chat:
+        channel_id = message.forward_from_chat.id
+
+    # ID или username канала
+    elif message.text:
+        channel = message.text.strip()
+
+        if channel.startswith("@"):
+            channel_id = channel
+        else:
+            try:
+                channel_id = int(channel)
+            except ValueError:
+                return await message.answer(
+                    "❌ Укажите корректный канал.\n\n"
+                    "Примеры:\n"
+                    "<code>-1001234567890</code>\n"
+                    "<code>@my_channel</code>"
+                )
+
+    else:
+        return await message.answer(
+            "❌ Перешлите сообщение из канала или отправьте ID канала."
         )
-    except ValueError:
-        return await message.answer("❌ Укажите корректный ID канала.")
 
     try:
-        me = await message.bot.get_me()
-        member = await message.bot.get_chat_member(channel_id, me.id)
+        bot = message.bot
+
+        me = await bot.get_me()
+        member = await bot.get_chat_member(
+            chat_id=channel_id,
+            user_id=me.id
+        )
 
         if member.status in ("left", "kicked"):
             return await message.answer(
-                "❌ Бот не состоит в канале."
+                "❌ Бот не добавлен в этот канал.\n\n"
+                "Добавьте бота как администратора."
             )
 
     except TelegramBadRequest:
         return await message.answer(
-            "❌ Не удалось получить информацию о канале."
+            "❌ Не удалось найти канал.\n\n"
+            "Проверьте ID или убедитесь, что бот имеет доступ."
         )
 
-    await state.update_data(channel_id=channel_id)
+    chat = await message.bot.get_chat(channel_id)
+
+    await state.update_data(
+        channel_id=channel_id,
+        channel_title=chat.title
+    )
 
     data = await state.get_data()
 
     await message.answer(
-        "🎲 Будет создан следующий розыгрыш:\n\n"
+        "🎲 <b>Проверьте данные розыгрыша:</b>\n\n"
         f"🎁 Приз: {data['prize']}\n"
-        f"💰 Цена билета: {data['price']} ₽\n"
-        f"🎫 Количество билетов: {data['total']}\n"
-        f"📢 Канал: {channel_id}",
+        f"💰 Билет: {data['price']} ₽\n"
+        f"🎫 Билетов: {data['total']}\n"
+        f"📢 Канал: {chat.title}\n\n"
+        f"💵 Максимальный сбор: "
+        f"{data['price'] * data['total']:,} ₽".replace(',', ' '),
         reply_markup=lottery_preview_keyboard()
     )
 
