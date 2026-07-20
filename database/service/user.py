@@ -46,3 +46,7 @@ class UserService:
     @staticmethod
     async def get_user(telegram_id: int) -> Optional[User]:
         return await UserRepository.get_by_tg_id(telegram_id)
+
+    @staticmethod
+    async def get_all_users():
+        return await User.all().order_by("-register_at")

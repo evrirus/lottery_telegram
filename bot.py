@@ -11,6 +11,7 @@ from config import create_session
 from database.models import init_tortoise
 from handlers.admin.create_lottery import router as create_lottery_router
 from handlers.admin.refund import router as refund_router
+from handlers.admin.statistics import router as statistics_router
 from handlers.inline_mode.referral import router as referral_router
 from handlers.my_tickets import router as my_tickets_router
 from handlers.replenish import router as replenish_router
@@ -35,7 +36,8 @@ async def main(config):
         refund_router,
         replenish_router,
         referral_router,
-        my_tickets_router
+        my_tickets_router,
+        statistics_router,
     )
 
     await init_tortoise()
