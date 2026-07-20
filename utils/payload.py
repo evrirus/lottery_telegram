@@ -13,7 +13,7 @@ class PayloadKey(str, Enum):
     COMMAND = "c"
 
 class StartCommand(str, Enum):
-    REPLENISH = "r"
+    REPLENISH = "replenish"
 
 
 def create_payload(data: dict[PayloadKey, Any]) -> str:
