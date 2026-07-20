@@ -6,6 +6,7 @@ from aiogram.utils.deep_linking import create_start_link
 from aiogram.utils.payload import encode_payload
 
 from database.service.lottery import LotteryService
+from database.service.user import UserService
 from keyboards.inline import create_inline_ref_keyboard, inlinequery_lottery_keyboard
 from utils.payload import create_payload, PayloadKey
 
@@ -71,12 +72,13 @@ async def inline_query_handler(query: InlineQuery):
     ]
     results.extend(inline_active_lotteries)
 
+    user = await UserService.get_user(query.from_user.id)
     await query.answer(
         results=results,
         cache_time=1,
         is_personal=True,
         button=InlineQueryResultsButton(
-            text="🚀 Перейти в бота",
+            text=f"Ваш баланс: {user.balance_display}",
             start_parameter=encode_payload("start")
         )
     )

@@ -1,3 +1,4 @@
+from decimal import Decimal
 from enum import Enum
 
 from tortoise import Tortoise
@@ -29,6 +30,11 @@ class User(models.Model):
 
     def __str__(self):
         return f"User({self.id}, tg={self.telegram_id}, balance={self.balance})"
+
+    @property
+    def balance_display(self) -> str:
+        value = self.balance.quantize(Decimal("0.01"))
+        return f"{value:,.2f}".replace(",", " ").replace(".", ",") + " ₽"
 
 
 class Lottery(models.Model):

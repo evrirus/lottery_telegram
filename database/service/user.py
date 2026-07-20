@@ -44,5 +44,5 @@ class UserService:
         return await UserRepository.withdraw(user_id, amount)
 
     @staticmethod
-    async def get_user(telegram_id: int):
+    async def get_user(telegram_id: int) -> Optional[User]:
         return await UserRepository.get_by_tg_id(telegram_id)
