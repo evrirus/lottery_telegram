@@ -29,6 +29,7 @@ router_start = Router()
     deep_link_encoded=True
 ))
 async def cmd_start(message: types.Message, command: CommandObject):
+    print(f"{command.args=}")
     payload = get_payload(command.args)
     print(payload)
     referrer_id = int(payload) if payload.get(PayloadKey.REFERRER_ID) else None

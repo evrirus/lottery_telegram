@@ -63,8 +63,7 @@ async def inline_query_handler(query: InlineQuery):
                     query.bot,
                     create_payload({
                         PayloadKey.LOTTERY_ID: lottery.id
-                    }),
-                    encode=True
+                    })
                 )
             )
         )

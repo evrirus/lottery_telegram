@@ -36,12 +36,12 @@ async def show_lottery(
         text += f"<b>Победитель: {url}</b>"
 
     else:
-        bot_info = await bot.get_me()
         payload = create_payload({
             PayloadKey.LOTTERY_ID: lottery_id,
         })
         link = await create_start_link(
-            bot, payload
+            bot, 
+            payload
         )
         text += f'<b>Лотерея активна, <a href="{link}">участвуйте!</a></b>'
 
