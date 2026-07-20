@@ -61,7 +61,9 @@ async def inline_query_handler(query: InlineQuery):
             reply_markup=inlinequery_lottery_keyboard(
                 link=await create_start_link(
                     query.bot,
-                    f"lottery_{lottery.id}",
+                    create_payload({
+                        PayloadKey.LOTTERY_ID: lottery.id
+                    }),
                     encode=True
                 )
             )

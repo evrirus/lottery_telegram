@@ -12,28 +12,32 @@ class PayloadKey(str, Enum):
     REFERRER_ID = "r"
     LOTTERY_ID = "l"
 
-def create_payload(data: dict[str, Any]) -> str:
+def create_payload(data: dict[PayloadKey, Any]) -> str:
     """
     Создает deep-link payload.
 
     :param data: Данные для передачи через /start
     :return: Закодированный payload
     """
+    prepared_data = {
+        key.value if isinstance(key, PayloadKey) else key: value
+        for key, value in data.items()
+    }
 
     return encode_payload(
-        json.dumps(data, separators=(",", ":"))
+        json.dumps(prepared_data, separators=(",", ":"))
     )
 
-def get_payload(payload: str) -> dict[str, Any]:
-    """
-    Декодирует deep-link payload.
-
-    :param payload: command.args из /start
-    """
-
+def get_payload(payload: str) -> dict[PayloadKey, Any]:
     try:
-        return json.loads(
+        data = json.loads(
             decode_payload(payload)
         )
+
+        return {
+            PayloadKey(key): value
+            for key, value in data.items()
+        }
+
     except (ValueError, json.JSONDecodeError):
         return {}
