@@ -30,6 +30,7 @@ router_start = Router()
 ))
 async def cmd_start(message: types.Message, command: CommandObject):
     payload = get_payload(command.args)
+    print(payload)
     referrer_id = int(payload) if payload.get(PayloadKey.REFERRER_ID) else None
     _, registered = await UserService.register(message.from_user.id, referrer_id=referrer_id)
 
