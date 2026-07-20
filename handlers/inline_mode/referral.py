@@ -64,7 +64,7 @@ async def inline_query_handler(query: InlineQuery):
         cache_time=1,
         is_personal=True,
         button=InlineQueryResultsButton(
-            text="Открыть Web App",
-            web_app=WebAppInfo(url="https://example.com")
+            text="🚀 Перейти в бота",
+            start_parameter="start",
         )
     )
