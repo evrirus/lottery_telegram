@@ -1,8 +1,10 @@
 from aiogram import Bot, types
+from aiogram.utils.deep_linking import create_start_link
 
 from database.models import LotteryStatus
 from database.service.lottery import LotteryService
 from keyboards.inline import cancel_button
+from utils.payload import create_payload, PayloadKey
 
 
 async def show_lottery(
@@ -35,8 +37,13 @@ async def show_lottery(
 
     else:
         bot_info = await bot.get_me()
-        url = f"https://t.me/{bot_info.username}?start=lottery_{lottery.id}"
-        text += f'<b>Лотерея активна, <a href="{url}">участвуйте!</a></b>'
+        payload = create_payload({
+            PayloadKey.LOTTERY_ID: lottery_id,
+        })
+        link = await create_start_link(
+            bot, payload
+        )
+        text += f'<b>Лотерея активна, <a href="{link}">участвуйте!</a></b>'
 
     if isinstance(message, types.Message):
         return await message.answer(
