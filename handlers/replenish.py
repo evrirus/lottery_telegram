@@ -46,4 +46,6 @@ async def buy_tickets_handler(cbd: CallbackQuery):
         await check_and_announce_winner(lottery_id, bot=cbd.bot)
         return
 
-    await cbd.message.edit_text(reason)
+    if cbd.message.photo:
+        await cbd.message.delete()
+    await cbd.message.answer(reason)
