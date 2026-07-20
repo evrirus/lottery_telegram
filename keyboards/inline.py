@@ -1,4 +1,5 @@
 # keyboards/inline.py
+from aiogram.enums import ButtonStyle
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
@@ -179,7 +180,24 @@ def my_tickets_keyboard(tickets: list[Ticket], user_id: int) -> InlineKeyboardMa
     builder.adjust(3)
     return builder.as_markup()
 
+def lottery_keyboard(lottery: Lottery) -> InlineKeyboardMarkup:
+    builder = InlineKeyboardBuilder()
+    builder.button(
+        text="🎟 Участвовать",
+        callback_data=f"lottery_{lottery.id}"
+    )
+
+    return builder.as_markup()
+
 def cancel_button(callback_data: str = "start") -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(inline_keyboard=[
         [InlineKeyboardButton(text="❌ Закрыть", callback_data=callback_data)]
     ])
+
+
+
+def create_inline_ref_keyboard(ref_link: str) -> InlineKeyboardMarkup:
+    builder = InlineKeyboardBuilder()
+    builder.button(text="🐺 Участвовать", url=ref_link, style=ButtonStyle.DANGER)
+
+    return builder.as_markup()

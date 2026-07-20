@@ -1,23 +1,32 @@
 import uuid
 
 from aiogram import Router
-from aiogram.types import InlineQueryResultArticle, InputTextMessageContent, InlineQuery
+from aiogram.types import InlineQueryResultArticle, InputTextMessageContent, InlineQuery, InlineQueryResultsButton, \
+    WebAppInfo
 from aiogram.utils.deep_linking import create_start_link
+
+from database.service.lottery import LotteryService
+from keyboards.inline import create_inline_ref_keyboard, lottery_keyboard
 
 router = Router()
 
 @router.inline_query()
 async def inline_query_handler(query: InlineQuery):
     text = query.query.strip()
-    link = await create_start_link(query.bot, f'{query.from_user.id}', encode=True)
+    ref_link = await create_start_link(query.bot, f'{query.from_user.id}', encode=True)
     results = [
         InlineQueryResultArticle(
             id=str(uuid.uuid4()),
-            title=f"Выслать приглашение",
+            title=f"🔗 Поделиться реферальной ссылкой",
             description="Нажмите, чтобы отправить реферальную ссылку",
             input_message_content=InputTextMessageContent(
-                message_text=f'Приглашаю тебя в бот лотерея: <a href="{link}">Переходи по ссылке</a>'
-            )
+                message_text=(
+                    "🚨 ОСТОРОЖНО! Я нашёл горячую лотерею 🔥\n\n"
+                    "Тут можно попытать удачу и выиграть крутые призы 🎁\n\n"
+                    "Я уже участвую — присоединяйся и ты 👇"
+                )
+            ),
+            reply_markup=create_inline_ref_keyboard(ref_link)
         ),
         InlineQueryResultArticle(
             id=str(uuid.uuid4()),
@@ -26,11 +35,36 @@ async def inline_query_handler(query: InlineQuery):
             input_message_content=InputTextMessageContent(
                 message_text="ЗХАЩВЫХЗАВЫХЗ!"
             )
-        )
+        ),
+
+
     ]
+
+    active_lotteries = await LotteryService.get_actives()
+    inline_active_lotteries = [
+        InlineQueryResultArticle(
+            id=str(uuid.uuid4()),
+            title=f"🎉 Розыгрыш {lottery.prize}",
+            description=f"Участников: {lottery.sold_tickets}/{lottery.total_tickets}",
+            input_message_content=InputTextMessageContent(
+                message_text=(
+                    f"🎉 <b>Розыгрыш: {lottery.prize}</b>\n"
+                    f"👥 Участников: {lottery.sold_tickets}/{lottery.total_tickets}\n\n"
+                    f"🍀 Успей принять участие и получить шанс выиграть!"
+                ),
+            ),
+            reply_markup=lottery_keyboard(lottery)
+        )
+        for lottery in active_lotteries
+    ]
+    results.extend(inline_active_lotteries)
 
     await query.answer(
         results=results,
         cache_time=1,
-        is_personal=True
+        is_personal=True,
+        button=InlineQueryResultsButton(
+            text="Открыть Web App",
+            web_app=WebAppInfo(url="https://example.com")
+        )
     )

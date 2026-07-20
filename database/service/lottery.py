@@ -1,6 +1,8 @@
+from typing import List
+
 from tortoise.transactions import in_transaction
 
-from database.models import LotteryStatus
+from database.models import LotteryStatus, Lottery
 from database.repo.lottery import LotteryRepository
 
 
@@ -11,7 +13,7 @@ class LotteryService:
         return await LotteryRepository.create(prize, price, total, channel_id, photo_file_id)
 
     @staticmethod
-    async def get_actives():
+    async def get_actives() -> List[Lottery]:
         return await LotteryRepository.get_actives()
 
     @staticmethod
