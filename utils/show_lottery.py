@@ -36,7 +36,13 @@ async def show_lottery(
         url = f"https://t.me/{bot_info.username}?start=lottery_{lottery.id}"
         text += f'<b>Лотерея активна, <a href="{url}">участвуйте!</a></b>'
 
-    await message.edit_text(
+    if isinstance(message, types.Message):
+        return await message.edit_text(
+            text,
+            reply_markup=cancel_button("start")
+        )
+    message: types.CallbackQuery
+    await message.message.answer(
         text,
         reply_markup=cancel_button("start")
     )
