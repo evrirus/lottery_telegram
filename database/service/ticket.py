@@ -12,7 +12,7 @@ from database.service.user import UserService
 class TicketService:
 
     @staticmethod
-    async def buy(lottery_id: int, user_id: int, quantity: int) -> Tuple[bool, str]:
+    async def buy(lottery_id: int, telegram_id: int, quantity: int) -> Tuple[bool, str]:
         async with in_transaction():
 
             lottery = await Lottery.filter(id=lottery_id).select_for_update().first()
@@ -27,7 +27,7 @@ class TicketService:
 
             # ✔ атомарный withdraw (без сервиса)
             updated = await User.filter(
-                telegram_id=user_id,
+                telegram_id=telegram_id,
                 balance__gte=total_price
             ).update(
                 balance=F("balance") - total_price
@@ -42,13 +42,17 @@ class TicketService:
             )
 
             # ✔ UPSERT БЕЗ update_or_create (ВАЖНО)
+            user = await UserService.get_user(telegram_id)
+            if not user:
+                return False, "Пользователь не найден"
+            
             updated = await Ticket.filter(
                 lottery_id=lottery_id,
-                user_id=user_id
+                user_id=user.id
             ).update(
                 quantity=F("quantity") + quantity
             )
-            user = await UserService.get_user(user_id)
+
             if not updated:
                 await TicketRepository.create(
                     lottery=lottery,
