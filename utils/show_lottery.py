@@ -1,5 +1,6 @@
 from aiogram import Bot, types
 from aiogram.utils.deep_linking import create_start_link
+from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 from database.models import LotteryStatus
 from database.service.lottery import LotteryService
@@ -35,23 +36,37 @@ async def show_lottery(
         url = f'<a href="tg://user?id={winner.id}">{winner.full_name}</a>'
         text += f"<b>Победитель: {url}</b>"
 
-    else:
+    builder = InlineKeyboardBuilder()
+
+    if lottery.status == LotteryStatus.ACTIVE:
         payload = create_payload({
-            PayloadKey.LOTTERY_ID: lottery_id,
+            PayloadKey.LOTTERY_ID: lottery.id,
         })
+
         link = await create_start_link(
-            bot, 
+            bot,
             payload
         )
-        text += f'<b>Лотерея активна, <a href="{link}">участвуйте!</a></b>'
+
+        builder.button(
+            text="🎟 Участвовать",
+            url=link
+        )
+
+    builder.button(
+        text="❌ Закрыть", callback_data="start"
+    )
+    builder.adjust(1)
+
+    keyboard = builder.as_markup()
 
     if isinstance(message, types.Message):
         return await message.answer(
             text,
-            reply_markup=cancel_button("start")
+            reply_markup=keyboard
         )
 
     await message.message.answer(
         text,
-        reply_markup=cancel_button("start")
+        reply_markup=keyboard
     )

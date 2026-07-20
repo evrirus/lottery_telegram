@@ -1,11 +1,10 @@
 # utils/payload.py
 
 import json
+from enum import Enum
 from typing import Any
 
-from aiogram.utils.payload import encode_payload, decode_payload
-
-from enum import Enum
+from aiogram.utils.payload import encode_payload
 
 
 class PayloadKey(str, Enum):
