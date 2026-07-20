@@ -29,10 +29,10 @@ router_start = Router()
     deep_link_encoded=True
 ))
 async def cmd_start(message: types.Message, command: CommandObject):
-    print(f"{command.args=}")
     payload = get_payload(command.args)
-    print(payload)
-    referrer_id = int(payload) if payload.get(PayloadKey.REFERRER_ID) else None
+
+    referrer_id = payload.get(PayloadKey.REFERRER_ID)
+    referrer_id = int(referrer_id) if referrer_id else None
     _, registered = await UserService.register(message.from_user.id, referrer_id=referrer_id)
 
     if payload.get(PayloadKey.LOTTERY_ID):
@@ -45,7 +45,6 @@ async def cmd_start(message: types.Message, command: CommandObject):
             message=message,
             lottery_id=lottery_id
         )
-
 
     text = "🎟 Главное меню 👇"
     if registered:
