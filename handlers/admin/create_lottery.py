@@ -237,7 +237,7 @@ async def process_channel(message: Message, state: FSMContext):
     chat = await message.bot.get_chat(channel_id)
 
     await state.update_data(
-        channel_id=channel_id,
+        channel_id=chat.id,
         channel_title=chat.title
     )
 
