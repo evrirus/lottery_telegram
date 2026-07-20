@@ -17,6 +17,7 @@ from database.service.user import UserService
 from keyboards.inline import get_ticket_quantity_keyboard, get_active_lotteries_keyboard, start_keyboard, \
     last_keyboard_buy, inline_exit_to_payment_method
 from service.cryptobot import create_cryptobot_invoice
+from utils.payload import get_payload, PayloadKey
 from utils.show_lottery import show_lottery
 
 logger = logging.getLogger()
@@ -28,14 +29,15 @@ router_start = Router()
     deep_link_encoded=True
 ))
 async def cmd_start(message: types.Message, command: CommandObject):
-    payload = command.args
-    referrer_id = int(payload) if payload and payload.isdigit() else None
+    payload = get_payload(command.args)
+    referrer_id = int(payload) if payload.get(PayloadKey.REFERRER_ID) else None
     _, registered = await UserService.register(message.from_user.id, referrer_id=referrer_id)
 
-    if command.args.startswith("lottery_"):
-        lottery_id = int(command.args.split("_")[1])
+    if payload.get(PayloadKey.LOTTERY_ID):
+        lottery_id = int(payload.get(PayloadKey.LOTTERY_ID, 0))
 
-        return await show_lottery(
+        if lottery_id:
+            return await show_lottery(
             bot=message.bot,
             user_id=message.from_user.id,
             message=message,

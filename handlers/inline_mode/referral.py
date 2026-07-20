@@ -7,13 +7,18 @@ from aiogram.utils.payload import encode_payload
 
 from database.service.lottery import LotteryService
 from keyboards.inline import create_inline_ref_keyboard, inlinequery_lottery_keyboard
+from utils.payload import create_payload, PayloadKey
 
 router = Router()
 
 @router.inline_query()
 async def inline_query_handler(query: InlineQuery):
     text = query.query.strip()
-    ref_link = await create_start_link(query.bot, f'{query.from_user.id}', encode=True)
+    payload = create_payload({
+        PayloadKey.REFERRER_ID: query.from_user.id
+    })
+
+    ref_link = await create_start_link(query.bot, payload)
     results = [
         InlineQueryResultArticle(
             id=str(uuid.uuid4()),
