@@ -33,8 +33,7 @@ class User(models.Model):
 
     @property
     def balance_display(self) -> str:
-        value = self.balance.quantize(Decimal("0.01"))
-        return f"{value:,.2f}".replace(",", " ").replace(".", ",") + " ₽"
+        return f"{int(self.balance):,}".replace(",", " ") + " ₽"
 
 
 class Lottery(models.Model):
