@@ -5,6 +5,7 @@ from database.models import LotteryStatus
 from database.service.lottery import LotteryService
 from database.service.ticket import TicketService
 from keyboards.inline import my_tickets_keyboard, cancel_button
+from utils.show_lottery import show_lottery
 
 router = Router()
 
@@ -81,28 +82,11 @@ async def my_history_handler(message: types.Message):
 
 @router.callback_query(lambda c: c.data.startswith("lottery_"))
 async def check_lottery_by_id_handler(callback: types.CallbackQuery):
-    parts = callback.data.split("_")
-    lottery_id = int(parts[1]) if parts[1] and parts[1].isdigit() else None
-    print(parts, lottery_id)
+    lottery_id = int(callback.data.split("_")[1])
 
-    lottery = await LotteryService.get_lottery(lottery_id=lottery_id, status=LotteryStatus.COMPLETED)
-    text = (
-        f"🎁 <b>Лотерея #{lottery.id}</b>\n\n"
-        f"🏆 Приз: {lottery.prize}\n"
-        f"💰 Цена билета: {lottery.ticket_price_display} ⭐️\n"
-        f"📊 Продано: {lottery.sold_tickets} из {lottery.total_tickets}\n\n"
+    await show_lottery(
+        bot=callback.bot,
+        user_id=callback.from_user.id,
+        message=callback.message,
+        lottery_id=lottery_id
     )
-    if lottery.status == LotteryStatus.COMPLETED and lottery.winner_user_id == callback.from_user.id:
-        text += f"👑 <b>Победитель: <a href=\"{callback.from_user.url}\">ВЫ</a></b> 🥳🥳🥳"
-
-    elif lottery.status == LotteryStatus.COMPLETED:
-        winner = await callback.bot.get_chat(callback.from_user.id)
-        url = f'<a href="tg://user?id={winner.id}">{winner.full_name}</a>'
-        text += f"<b>Победитель: {url}</b>"
-
-    else:
-        bot_url = (await callback.bot.get_me()).url
-        url = f"{bot_url}?start=lottery_{lottery.id}"
-        text += f"<b>Лотерея активна, <a href=\"{url}\">участвуйте!</a></b>"
-
-    await callback.message.edit_text(text, reply_markup=cancel_button("start"))
