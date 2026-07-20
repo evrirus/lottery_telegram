@@ -1,8 +1,7 @@
 # keyboards/inline.py
 from aiogram.enums import ButtonStyle
-from aiogram.utils.deep_linking import create_start_link
-from aiogram.utils.keyboard import InlineKeyboardBuilder
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 from database.models import Ticket, Lottery
 
@@ -15,7 +14,7 @@ def get_ticket_quantity_keyboard(lottery_id: int, available_tickets: int) -> Inl
     builder = InlineKeyboardBuilder()
 
     # Стандартные варианты покупки
-    quantities = [1, 2, 3, 5, 10]
+    quantities = [1, 2, 3, 5, 10, 20, 50, 100]
 
     # Оставляем только те варианты, которые меньше или равны доступному остатку
     valid_quantities = [q for q in quantities if q <= available_tickets]
@@ -26,11 +25,18 @@ def get_ticket_quantity_keyboard(lottery_id: int, available_tickets: int) -> Inl
 
     buttons = [
         InlineKeyboardButton(
-            text=f"🎫 {qty} шт.",
+            text=f"{qty} шт.",
             callback_data=f"buy_ticket_{lottery_id}_{qty}"
         )
         for qty in valid_quantities
     ]
+    if available_tickets > 10:
+        buttons.append(
+            InlineKeyboardButton(
+                text=f"🔥 Все ({available_tickets})",
+                callback_data=f"buy_ticket:{lottery_id}:{available_tickets}"
+            )
+        )
 
     cancel_button = InlineKeyboardButton(
         text="❌ Отмена",
