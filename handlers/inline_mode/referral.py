@@ -4,6 +4,7 @@ from aiogram import Router
 from aiogram.types import InlineQueryResultArticle, InputTextMessageContent, InlineQuery, InlineQueryResultsButton, \
     WebAppInfo
 from aiogram.utils.deep_linking import create_start_link
+from aiogram.utils.payload import encode_payload
 
 from database.service.lottery import LotteryService
 from keyboards.inline import create_inline_ref_keyboard, lottery_keyboard
@@ -65,6 +66,6 @@ async def inline_query_handler(query: InlineQuery):
         is_personal=True,
         button=InlineQueryResultsButton(
             text="🚀 Перейти в бота",
-            start_parameter="start",
+            start_parameter=encode_payload("start")
         )
     )
