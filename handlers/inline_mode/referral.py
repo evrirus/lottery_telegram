@@ -20,7 +20,7 @@ async def inline_query_handler(query: InlineQuery):
     ref_link = await create_start_link(query.bot, payload)
     results = [
         InlineQueryResultArticle(
-            id=str(uuid.uuid4()),
+            id=str(query.from_user.id),
             title=f"🔗 Поделиться реферальной ссылкой",
             description="Нажмите, чтобы отправить реферальную ссылку",
             input_message_content=InputTextMessageContent(
@@ -37,13 +37,13 @@ async def inline_query_handler(query: InlineQuery):
     active_lotteries = await LotteryService.get_actives()
     inline_active_lotteries = [
         InlineQueryResultArticle(
-            id=str(uuid.uuid4()),
+            id=str(lottery.id),
             title=f"🎉 Розыгрыш {lottery.prize}",
             description=f"Участников: {lottery.sold_tickets}/{lottery.total_tickets} | Lottio",
             input_message_content=InputTextMessageContent(
                 message_text=(
                     f"🎉 <b>Розыгрыш: {lottery.prize}</b> | Lottio\n"
-                    f"👥 Участников: {lottery.sold_tickets}/{lottery.total_tickets}\n\n"
+                    f"👥 Осталось всего {lottery.total_tickets - lottery.sold_tickets} билетов из {lottery.total_tickets}\n\n"
                     f"🍀 Успей принять участие и получить шанс выиграть!"
                 ),
             ),

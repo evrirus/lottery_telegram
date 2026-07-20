@@ -212,6 +212,6 @@ def cancel_button(callback_data: str = "start") -> InlineKeyboardMarkup:
 
 def create_inline_ref_keyboard(ref_link: str) -> InlineKeyboardMarkup:
     builder = InlineKeyboardBuilder()
-    builder.button(text="🐺 Участвовать", url=ref_link, style=ButtonStyle.DANGER)
+    builder.button(text="🐺 Участвовать", url=ref_link, style=ButtonStyle.PRIMARY)
 
     return builder.as_markup()
